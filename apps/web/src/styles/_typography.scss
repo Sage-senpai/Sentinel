@@ -1,0 +1,79 @@
+// ============================================================
+//  SENTINEL — Typography
+//  Space Mono → headings, data, prices (terminal feel)
+//  Sora → body text, descriptions, UI labels
+// ============================================================
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700&display=swap');
+
+// ── Base type rules ─────────────────────────────────────────
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-base); }
+
+// ── Data typography ─────────────────────────────────────────
+// Use for market prices, percentages, counts
+.data-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+// ── Links ───────────────────────────────────────────────────
+a {
+  color: var(--color-teal);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-cyan);
+  }
+}
+
+// ── Code / mono ─────────────────────────────────────────────
+code,
+kbd,
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+// ── Selection ───────────────────────────────────────────────
+::selection {
+  background: rgba(0, 184, 217, 0.3);
+  color: var(--color-text-primary);
+}

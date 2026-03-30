@@ -1,0 +1,259 @@
+@use '../../../styles/mixins' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// ── Cascade Banner ──────────────────────────────────────────
+.cascadeBanner {
+  @include glass-panel;
+  @include flex-between;
+  padding: var(--space-3) var(--space-6);
+  border-color: var(--color-red);
+  color: var(--color-red);
+  font-family: var(--font-mono);
+  font-weight: 700;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: cascade-alert 1.5s ease infinite, slide-down 0.4s ease forwards;
+  }
+}
+
+.cascadeBannerIcon {
+  font-size: var(--text-xl);
+}
+
+.cascadeBannerProb {
+  font-size: var(--text-2xl);
+}
+
+// ── Layout ──────────────────────────────────────────────────
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: var(--space-4);
+
+  @include tablet {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Market Sidebar ──────────────────────────────────────────
+.marketSidebar {
+  @include glass-panel;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  @include tablet {
+    flex-direction: row;
+    overflow-x: auto;
+    @include custom-scrollbar;
+  }
+}
+
+.sidebarTitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-2);
+}
+
+.marketCard {
+  @include flex-center;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+  width: 100%;
+
+  &:hover {
+    background: rgba(0, 184, 217, 0.06);
+    border-color: var(--color-border);
+  }
+}
+
+.selected {
+  background: rgba(0, 184, 217, 0.1);
+  border-color: var(--color-teal);
+}
+
+.riskOrb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-teal);
+  flex-shrink: 0;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: risk-orb 2s ease infinite;
+  }
+
+  &[data-risk="high"] {
+    background: var(--color-red);
+  }
+}
+
+.marketInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.marketSymbol {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.marketRisk {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+// ── Main Content ────────────────────────────────────────────
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.heatmapHeader {
+  @include flex-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+
+  h2 {
+    font-size: var(--text-xl);
+  }
+}
+
+.legend {
+  @include flex-center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.legendBar {
+  width: 120px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    var(--color-teal),
+    var(--color-gold),
+    var(--color-red)
+  );
+}
+
+.legendLow {
+  color: var(--color-teal);
+}
+
+.legendHigh {
+  color: var(--color-red);
+}
+
+// ── Heatmap ─────────────────────────────────────────────────
+.heatmap {
+  @include glass-panel;
+  min-height: 400px;
+  position: relative;
+  overflow: hidden;
+}
+
+.heatmapPlaceholder {
+  @include flex-center;
+  height: 400px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+// ── Gauge Row ───────────────────────────────────────────────
+.gaugeRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+
+  @include tablet {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gaugeCard {
+  @include glass-panel;
+  padding: var(--space-4);
+  text-align: center;
+
+  h4 {
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-3);
+  }
+}
+
+.gauge {
+  position: relative;
+  @include flex-center;
+  flex-direction: column;
+}
+
+.gaugeSvg {
+  width: 100%;
+  max-width: 120px;
+}
+
+.gaugeValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-cyan);
+  margin-top: var(--space-2);
+}
+
+.priceValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+
+  @media (prefers-reduced-motion: no-preference) {
+    &.updated {
+      animation: data-flash 0.6s ease;
+    }
+  }
+}
+
+// ── Severity states ─────────────────────────────────────────
+.watch {
+  border-color: var(--color-severity-watch);
+}
+
+.alert {
+  border-color: var(--color-severity-alert);
+}
+
+.cascadeImminent {
+  border-color: var(--color-severity-cascade);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: cascade-alert 1.5s ease infinite;
+  }
+}

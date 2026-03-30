@@ -1,0 +1,77 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Next.js
+apps/web/.next/
+apps/web/out/
+
+# Python
+apps/api/.venv/
+venv/
+*.so
+
+# Hardhat
+apps/contracts/cache/
+apps/contracts/artifacts/
+apps/contracts/typechain-types/
+
+# Docker
+*.log
+
+# Coverage
+coverage/
+.nyc_output/
+htmlcov/
+*.coverage
+
+# Build artifacts
+*.tsbuildinfo
+
+# Lighthouse
+.lighthouseci/
+
+# Slither
+slither-report.*
+
+# Redis dump
+dump.rdb
+
+# Playwright
+playwright-report/
+test-results/
+
+# Misc
+*.bak
+*.tmp
+
+# Memory/planning files (local only)
+MEMORY.md
+memory/
+IMPROVEMENTS.md
+SENTINEL_HackathonStrategy.docx
+SENTINEL_ProductSpec.docx
+discord-texts.md

@@ -1,0 +1,93 @@
+// ============================================================
+//  SENTINEL — Design Tokens
+//  All CSS custom properties defined here — enforced by CI
+// ============================================================
+
+:root {
+  // ── Brand Colors ──────────────────────────────────────────
+  --color-navy: #0a1628;
+  --color-ocean: #0d2d50;
+  --color-teal: #00b8d9;
+  --color-cyan: #00e5ff;
+  --color-gold: #d4a017;
+  --color-green: #00875a;
+  --color-red: #de350b;
+  --color-muted: #6b7a9b;
+
+  // ── Semantic Colors ───────────────────────────────────────
+  --color-bg-primary: var(--color-navy);
+  --color-bg-secondary: var(--color-ocean);
+  --color-text-primary: #e8edf5;
+  --color-text-secondary: #9ba8c4;
+  --color-text-accent: var(--color-cyan);
+  --color-border: rgba(0, 184, 217, 0.15);
+  --color-border-hover: rgba(0, 184, 217, 0.35);
+
+  // ── Severity Colors ───────────────────────────────────────
+  --color-severity-watch: var(--color-gold);
+  --color-severity-alert: #ff6b00;
+  --color-severity-cascade: var(--color-red);
+
+  // ── Intent Badge Colors ───────────────────────────────────
+  --color-intent-accumulating: var(--color-green);
+  --color-intent-distributing: var(--color-red);
+  --color-intent-hedging: var(--color-gold);
+  --color-intent-arbitrage: var(--color-teal);
+  --color-intent-unknown: var(--color-muted);
+
+  // ── Glass Panel ───────────────────────────────────────────
+  --glass-bg: rgba(13, 45, 80, 0.6);
+  --glass-blur: 12px;
+  --glass-border: 1px solid var(--color-border);
+  --glass-radius: 12px;
+
+  // ── Typography ────────────────────────────────────────────
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+  --font-sans: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+
+  // ── Spacing ───────────────────────────────────────────────
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  // ── Layout ────────────────────────────────────────────────
+  --sidebar-width: 260px;
+  --header-height: 64px;
+  --content-max-width: 1440px;
+
+  // ── Shadows ───────────────────────────────────────────────
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow-teal: 0 0 20px rgba(0, 184, 217, 0.3);
+  --shadow-glow-cyan: 0 0 20px rgba(0, 229, 255, 0.3);
+  --shadow-glow-red: 0 0 20px rgba(222, 53, 11, 0.3);
+
+  // ── Transitions ───────────────────────────────────────────
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  // ── Z-Index Scale ─────────────────────────────────────────
+  --z-sidebar: 100;
+  --z-header: 200;
+  --z-modal: 300;
+  --z-alert-banner: 400;
+  --z-tooltip: 500;
+}

@@ -1,0 +1,22 @@
+{
+  "name": "sentinel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-Powered Liquidation Defense & Whale Intelligence Platform",
+  "scripts": {
+    "dev:web": "cd apps/web && npm run dev",
+    "dev:api": "cd apps/api && uvicorn app.main:app --reload --port 8000",
+    "dev": "docker compose up --build",
+    "build:web": "cd apps/web && npm run build",
+    "build:contracts": "cd apps/contracts && npx hardhat compile",
+    "test:web": "cd apps/web && npm test",
+    "test:api": "cd apps/api && pytest",
+    "test:contracts": "cd apps/contracts && npx hardhat test",
+    "test": "npm run test:web && npm run test:api && npm run test:contracts",
+    "lint:web": "cd apps/web && npm run lint",
+    "lint:scss": "cd apps/web && npm run lint:scss",
+    "lint": "npm run lint:web && npm run lint:scss"
+  },
+  "keywords": ["defi", "liquidation", "whale-tracking", "pacifica", "sentinel"],
+  "license": "MIT"
+}

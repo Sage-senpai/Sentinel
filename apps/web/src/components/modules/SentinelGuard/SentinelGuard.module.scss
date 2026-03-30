@@ -1,0 +1,280 @@
+@use '../../../styles/mixins' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.header {
+  h2 {
+    font-size: var(--text-2xl);
+  }
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-4);
+
+  @include tablet {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Positions Section ───────────────────────────────────────
+.positionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  h3 {
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+  }
+}
+
+.emptyState {
+  @include glass-panel;
+  @include flex-center;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-16) var(--space-8);
+  text-align: center;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+}
+
+.shieldIcon {
+  width: 80px;
+  height: 80px;
+  @include flex-center;
+  border-radius: 50%;
+  background: rgba(0, 229, 255, 0.08);
+  border: 2px solid rgba(0, 229, 255, 0.2);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: shield-pulse 2s ease infinite;
+  }
+}
+
+.shieldGlyph {
+  font-size: var(--text-3xl);
+  color: var(--color-cyan);
+}
+
+.emptySubtext {
+  font-size: var(--text-sm);
+  opacity: 0.6;
+}
+
+// ── Position Card ───────────────────────────────────────────
+.positionCard {
+  @include glass-panel;
+  padding: var(--space-4);
+}
+
+.posCardHeader {
+  @include flex-between;
+  margin-bottom: var(--space-4);
+}
+
+.posSymbol {
+  @include flex-center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--text-lg);
+}
+
+.direction {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 4px;
+}
+
+.long {
+  color: var(--color-green);
+  background: rgba(0, 135, 90, 0.15);
+}
+
+.short {
+  color: var(--color-red);
+  background: rgba(222, 53, 11, 0.15);
+}
+
+.guardToggle {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 6px;
+  border: 1px solid var(--color-muted);
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    border-color: var(--color-cyan);
+    color: var(--color-cyan);
+  }
+}
+
+.guardActive {
+  border-color: var(--color-cyan);
+  color: var(--color-cyan);
+  background: rgba(0, 229, 255, 0.1);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: shield-pulse 2s ease infinite;
+  }
+}
+
+.posMetrics {
+  @include flex-center;
+  gap: var(--space-6);
+}
+
+.marginGauge {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  @include flex-center;
+}
+
+.gaugeSvg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+.marginValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  z-index: 1;
+}
+
+.posStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  flex: 1;
+}
+
+.posStat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.posLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.posValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.positive {
+  color: var(--color-green);
+}
+
+.negative {
+  color: var(--color-red);
+}
+
+// ── Timeline Section ────────────────────────────────────────
+.timelineSection {
+  @include glass-panel;
+  padding: var(--space-4);
+  max-height: 600px;
+  overflow-y: auto;
+  @include custom-scrollbar;
+
+  h3 {
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+  }
+}
+
+.emptyTimeline {
+  @include flex-center;
+  padding: var(--space-8);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-left: 2px solid var(--color-border);
+  padding-left: var(--space-4);
+}
+
+.timelineEntry {
+  position: relative;
+  padding: var(--space-3);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: fade-in 0.3s ease forwards;
+  }
+}
+
+.timelineDot {
+  position: absolute;
+  left: calc(-1 * var(--space-4) - 5px);
+  top: var(--space-3);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-teal);
+  border: 2px solid var(--color-ocean);
+}
+
+.timelineContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.timelineAction {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.timelineMarket {
+  font-size: var(--text-xs);
+  color: var(--color-teal);
+}
+
+.timelineDetails {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.timelineTime {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}

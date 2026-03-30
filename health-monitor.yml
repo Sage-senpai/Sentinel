@@ -1,0 +1,112 @@
+# ============================================================
+#  SENTINEL — Scheduled Health Monitor
+#  Runs every 15 minutes in production. Pages on failure.
+# ============================================================
+
+name: Production Health Monitor
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # Every 15 minutes
+  workflow_dispatch:           # Allow manual trigger
+
+jobs:
+  health-check:
+    name: Check All Services
+    runs-on: ubuntu-latest
+    steps:
+      - name: API health endpoint
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            --max-time 10 \
+            https://api.sentinel.app/health)
+          [ "$STATUS" == "200" ] || (echo "API DOWN (HTTP $STATUS)" && exit 1)
+
+      - name: WebSocket connectivity
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            --max-time 10 \
+            https://api.sentinel.app/health/ws)
+          [ "$STATUS" == "200" ] || (echo "WebSocket health FAIL" && exit 1)
+
+      - name: Pacifica API reachability
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            --max-time 15 \
+            https://api.sentinel.app/health/pacifica)
+          [ "$STATUS" == "200" ] || (echo "Pacifica upstream FAIL" && exit 1)
+
+      - name: All 6 agents running
+        id: agent-check
+        run: |
+          RESPONSE=$(curl -sf --max-time 10 https://api.sentinel.app/health/agents)
+          ALL_OK=$(echo "$RESPONSE" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          agents = data.get('agents', {})
+          expected = ['guard', 'cascade_predictor', 'whale_intel', 'funding_forecast', 'africa_fx', 'alert_broadcast']
+          failing = [a for a in expected if agents.get(a) != 'running']
+          print(','.join(failing) if failing else 'ok')
+          ")
+          if [ "$ALL_OK" != "ok" ]; then
+            echo "FAILING_AGENTS=$ALL_OK" >> $GITHUB_OUTPUT
+            echo "Agents not running: $ALL_OK"
+            exit 1
+          fi
+          echo "All 6 agents healthy."
+
+      - name: Redis connectivity
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            --max-time 10 \
+            https://api.sentinel.app/health/redis)
+          [ "$STATUS" == "200" ] || (echo "Redis DOWN" && exit 1)
+
+      - name: Frontend reachable
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            --max-time 10 \
+            https://sentinel.app)
+          [ "$STATUS" == "200" ] || (echo "Frontend DOWN (HTTP $STATUS)" && exit 1)
+
+      - name: Alert on any failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "🚨 SENTINEL PRODUCTION ALERT\nOne or more health checks FAILED.\nFailing agents: ${{ steps.agent-check.outputs.FAILING_AGENTS || 'N/A' }}\nInvestigate: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+# ============================================================
+#  Scheduled: Weekly Lighthouse audit + dependency updates
+# ============================================================
+  weekly-audit:
+    name: Weekly Lighthouse + Dep Check
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 9 * * 1'   # Mondays 9AM UTC
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lighthouse weekly report
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            https://sentinel.app
+            https://sentinel.app/dashboard
+            https://sentinel.app/whale-tracker
+          budgetPath: .github/lighthouse-budget.json
+          uploadArtifacts: true
+
+      - name: Post weekly Lighthouse report
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "📊 SENTINEL Weekly Lighthouse Report\nCheck GitHub Actions for full scores.\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

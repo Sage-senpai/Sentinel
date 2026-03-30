@@ -1,0 +1,253 @@
+# ============================================================
+#  SENTINEL — PR Quality Gate
+#  Fast checks on every pull request. Blocks merge on failure.
+# ============================================================
+
+name: PR Quality Gate
+
+on:
+  pull_request:
+    branches: [main, dev]
+    types: [opened, synchronize, reopened]
+
+env:
+  NODE_VERSION: '20.x'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ── Size & diff check ──────────────────────────────────────
+  pr-check:
+    name: PR Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR title follows Conventional Commits
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            chore
+            docs
+            style
+            refactor
+            perf
+            test
+            ci
+            build
+          requireScope: false
+
+      - name: Check PR size (warn if >500 lines changed)
+        uses: CodelyTV/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: 'size/XS'
+          xs_max_size: 50
+          s_label: 'size/S'
+          s_max_size: 150
+          m_label: 'size/M'
+          m_max_size: 300
+          l_label: 'size/L'
+          l_max_size: 500
+          xl_label: 'size/XL'
+          fail_if_xl: false
+
+  # ── Inline style guard — SENTINEL has zero tolerance ──────
+  no-inline-styles:
+    name: No Inline Styles Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for inline styles in changed files
+        run: |
+          # Get only changed .tsx and .ts files
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
+            | grep -E '\.(tsx|jsx|ts|js)$' || true)
+
+          if [ -z "$CHANGED" ]; then
+            echo "No TS/TSX files changed. Skipping."
+            exit 0
+          fi
+
+          echo "Checking files for inline styles:"
+          echo "$CHANGED"
+
+          # Detect style={{ ... }} patterns
+          VIOLATIONS=$(echo "$CHANGED" | xargs grep -n 'style={{' 2>/dev/null || true)
+
+          if [ -n "$VIOLATIONS" ]; then
+            echo ""
+            echo "❌ INLINE STYLE VIOLATIONS FOUND:"
+            echo "$VIOLATIONS"
+            echo ""
+            echo "SENTINEL rule: ALL styling must live in .module.scss files."
+            echo "Move these to the component's [Name].module.scss file."
+            exit 1
+          fi
+
+          echo "✅ No inline styles found."
+
+  # ── SCSS architecture enforcement ─────────────────────────
+  scss-conventions:
+    name: SCSS Architecture Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify SCSS module co-location
+        run: |
+          # Every new .tsx component must have a co-located .module.scss
+          NEW_COMPONENTS=$(git diff --name-only --diff-filter=A origin/${{ github.base_ref }}...HEAD \
+            | grep -E 'components/.*\.tsx$' || true)
+
+          MISSING_SCSS=""
+          for component in $NEW_COMPONENTS; do
+            dir=$(dirname "$component")
+            base=$(basename "$component" .tsx)
+            scss="$dir/$base.module.scss"
+            if [ ! -f "$scss" ]; then
+              MISSING_SCSS="$MISSING_SCSS\n  Missing: $scss (for $component)"
+            fi
+          done
+
+          if [ -n "$MISSING_SCSS" ]; then
+            echo "❌ New components missing .module.scss files:"
+            printf "$MISSING_SCSS\n"
+            echo ""
+            echo "Every component in /components must have a co-located [Name].module.scss"
+            exit 1
+          fi
+
+          echo "✅ SCSS co-location check passed."
+
+  # ── Env variable guard — no secrets in code ──────────────
+  env-safety:
+    name: Env Safety Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for hardcoded secrets patterns
+        run: |
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
+            | grep -v '.github' | grep -v 'node_modules' || true)
+
+          if [ -z "$CHANGED" ]; then exit 0; fi
+
+          # Patterns that indicate hardcoded secrets
+          PATTERNS=(
+            "PRIVATE_KEY\s*=\s*['\"][0-9a-fA-F]{64}"
+            "API_KEY\s*=\s*['\"][A-Za-z0-9_-]{20,}"
+            "pacifica_api_key\s*=\s*['\"]"
+            "sk-[a-zA-Z0-9]{20,}"
+            "0x[0-9a-fA-F]{64}['\"]"
+          )
+
+          FOUND=false
+          for pattern in "${PATTERNS[@]}"; do
+            HITS=$(echo "$CHANGED" | xargs grep -rn -E "$pattern" 2>/dev/null || true)
+            if [ -n "$HITS" ]; then
+              echo "❌ Potential secret pattern found:"
+              echo "$HITS"
+              FOUND=true
+            fi
+          done
+
+          if $FOUND; then
+            echo ""
+            echo "Use GitHub Secrets + Railway environment variables for all keys."
+            exit 1
+          fi
+
+          echo "✅ No hardcoded secret patterns found."
+
+  # ── Dependency audit ──────────────────────────────────────
+  dep-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: npm audit (web)
+        working-directory: apps/web
+        run: npm audit --audit-level=critical
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: pip-audit (api)
+        working-directory: apps/api
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt --severity critical
+
+  # ── Post PR summary ───────────────────────────────────────
+  pr-summary:
+    name: Post PR Summary
+    runs-on: ubuntu-latest
+    needs: [pr-check, no-inline-styles, scss-conventions, env-safety, dep-audit]
+    if: always()
+    steps:
+      - name: Comment PR with gate results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jobs = {
+              'PR Hygiene':        '${{ needs.pr-check.result }}',
+              'No Inline Styles':  '${{ needs.no-inline-styles.result }}',
+              'SCSS Conventions':  '${{ needs.scss-conventions.result }}',
+              'Env Safety':        '${{ needs.env-safety.result }}',
+              'Dep Audit':         '${{ needs.dep-audit.result }}',
+            };
+
+            const icon = r => r === 'success' ? '✅' : r === 'skipped' ? '⏭️' : '❌';
+            const allPassed = Object.values(jobs).every(r => r === 'success' || r === 'skipped');
+
+            const rows = Object.entries(jobs)
+              .map(([name, result]) => `| ${icon(result)} | ${name} | \`${result}\` |`)
+              .join('\n');
+
+            const body = [
+              `## ${allPassed ? '✅ PR Quality Gate Passed' : '🚨 PR Quality Gate Failed'}`,
+              '',
+              '| Status | Check | Result |',
+              '|:------:|-------|--------|',
+              rows,
+              '',
+              allPassed
+                ? '_All checks passed. This PR is ready for review._'
+                : '_Fix the failing checks above before requesting a review._',
+            ].join('\n');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });

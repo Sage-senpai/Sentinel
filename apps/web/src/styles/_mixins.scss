@@ -1,0 +1,105 @@
+// ============================================================
+//  SENTINEL — SCSS Mixins
+// ============================================================
+
+// ── Glass Panel: frosted glass card/panel effect ────────────
+@mixin glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: var(--glass-border);
+  border-radius: var(--glass-radius);
+}
+
+// ── Glow Border: animated border glow effect ────────────────
+@mixin glow-border($color: var(--color-teal), $intensity: 0.3) {
+  border: 1px solid $color;
+  box-shadow: 0 0 12px rgba($color, $intensity);
+  transition: box-shadow var(--transition-base);
+
+  &:hover {
+    box-shadow: 0 0 20px rgba($color, $intensity + 0.15);
+  }
+}
+
+// ── Animated Gradient: mesh gradient background ─────────────
+@mixin animated-gradient {
+  background: linear-gradient(
+    -45deg,
+    #0a1628,
+    #0d2d50,
+    #0a1628,
+    #051020
+  );
+  background-size: 400% 400%;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: ocean-drift 18s ease infinite;
+  }
+}
+
+// ── Responsive breakpoints ──────────────────────────────────
+@mixin mobile {
+  @media (max-width: 768px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (max-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: 1025px) {
+    @content;
+  }
+}
+
+// ── Text truncation ─────────────────────────────────────────
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ── Scrollbar styling ───────────────────────────────────────
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-muted);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--color-teal);
+    }
+  }
+}
+
+// ── Animation wrapper: only animates with no-preference ─────
+@mixin animate($name, $duration: 1s, $timing: ease, $iteration: 1, $fill: forwards) {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: $name $duration $timing $iteration $fill;
+  }
+}
+
+// ── Flex helpers ────────────────────────────────────────────
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
