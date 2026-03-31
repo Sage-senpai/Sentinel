@@ -1,3 +1,5 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
@@ -5,11 +7,18 @@ const nextConfig = {
     includePaths: ['./src/styles'],
   },
   images: {
-    domains: ['arweave.net', 'arbiscan.io'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'arweave.net' },
+      { protocol: 'https', hostname: 'arbiscan.io' },
+    ],
   },
   webpack: (config) => {
-    // Required for Three.js
     config.externals = [...(config.externals || []), { canvas: 'canvas' }];
+    // Fix @motionone/utils resolution for nested @walletconnect/modal
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@motionone/utils': path.resolve(__dirname, 'node_modules/@motionone/utils'),
+    };
     return config;
   },
 };

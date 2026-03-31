@@ -1,0 +1,25 @@
+[
+  {
+    "path": "/",
+    "assertions": {
+      "categories:performance":    { "minScore": 0.85, "aggregationMethod": "median-run" },
+      "categories:accessibility":  { "minScore": 0.90, "aggregationMethod": "median-run" },
+      "categories:best-practices": { "minScore": 0.90, "aggregationMethod": "median-run" },
+      "categories:seo":            { "minScore": 0.85, "aggregationMethod": "median-run" },
+      "first-contentful-paint":    { "maxNumericValue": 2000 },
+      "interactive":               { "maxNumericValue": 4000 },
+      "speed-index":               { "maxNumericValue": 3500 },
+      "total-blocking-time":       { "maxNumericValue": 300 },
+      "cumulative-layout-shift":   { "maxNumericValue": 0.1 }
+    }
+  },
+  {
+    "path": "/dashboard",
+    "assertions": {
+      "categories:performance":    { "minScore": 0.80, "aggregationMethod": "median-run" },
+      "categories:accessibility":  { "minScore": 0.90, "aggregationMethod": "median-run" },
+      "first-contentful-paint":    { "maxNumericValue": 2500 },
+      "interactive":               { "maxNumericValue": 5000 }
+    }
+  }
+]

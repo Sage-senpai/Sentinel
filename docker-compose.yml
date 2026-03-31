@@ -7,7 +7,7 @@ version: '3.9'
 
 services:
 
-  # ── Next.js frontend ──────────────────────────────────────
+  # -- Next.js frontend -------------------------------------------
   web:
     build:
       context: ./apps/web
@@ -30,7 +30,7 @@ services:
       - api
     restart: unless-stopped
 
-  # ── FastAPI backend ───────────────────────────────────────
+  # -- FastAPI backend --------------------------------------------
   api:
     build:
       context: ./apps/api
@@ -42,7 +42,7 @@ services:
     environment:
       - ENVIRONMENT=development
       - REDIS_URL=redis://redis:6379/0
-      - DATABASE_URL=postgresql://sentinel:sentinel@postgres:5432/sentinel_dev
+      - DATABASE_URL=postgresql+asyncpg://sentinel:sentinel@postgres:5432/sentinel_dev
       - PACIFICA_API_URL=https://test-api.pacifica.fi/api/v1
       - PACIFICA_WS_URL=wss://test-ws.pacifica.fi
       - PACIFICA_API_KEY=${PACIFICA_API_KEY}
@@ -58,7 +58,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # ── AI Agent workers ──────────────────────────────────────
+  # -- AI Agent workers -------------------------------------------
   workers:
     build:
       context: ./apps/api
@@ -68,13 +68,12 @@ services:
     environment:
       - ENVIRONMENT=development
       - REDIS_URL=redis://redis:6379/0
-      - DATABASE_URL=postgresql://sentinel:sentinel@postgres:5432/sentinel_dev
+      - DATABASE_URL=postgresql+asyncpg://sentinel:sentinel@postgres:5432/sentinel_dev
       - PACIFICA_API_URL=https://test-api.pacifica.fi/api/v1
       - PACIFICA_WS_URL=wss://test-ws.pacifica.fi
       - PACIFICA_API_KEY=${PACIFICA_API_KEY}
       - ELFA_API_KEY=${ELFA_API_KEY}
       - COINGECKO_API_KEY=${COINGECKO_API_KEY}
-      # Agent toggles — set to 'false' to disable individual agents locally
       - AGENT_GUARD_ENABLED=true
       - AGENT_CASCADE_ENABLED=true
       - AGENT_WHALE_ENABLED=true
@@ -87,7 +86,7 @@ services:
       - api
     restart: unless-stopped
 
-  # ── Redis ─────────────────────────────────────────────────
+  # -- Redis ------------------------------------------------------
   redis:
     image: redis:7-alpine
     ports:
@@ -102,7 +101,7 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # ── Redis Commander (dev UI) ──────────────────────────────
+  # -- Redis Commander (dev UI) -----------------------------------
   redis-ui:
     image: rediscommander/redis-commander:latest
     ports:
@@ -114,7 +113,7 @@ services:
     profiles:
       - debug
 
-  # ── PostgreSQL ────────────────────────────────────────────
+  # -- PostgreSQL -------------------------------------------------
   postgres:
     image: postgres:15-alpine
     ports:
@@ -133,7 +132,7 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # ── Hardhat local node (for contract dev) ─────────────────
+  # -- Hardhat local node (for contract dev) ----------------------
   hardhat:
     build:
       context: ./apps/contracts

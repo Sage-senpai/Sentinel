@@ -1,0 +1,782 @@
+# ============================================================
+#  SENTINEL — Main CI/CD Pipeline
+#  Triggers: push to main/dev, PRs to main, manual dispatch
+# ============================================================
+
+name: SENTINEL CI/CD
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'Deployment target'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+# Cancel in-progress runs on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+  PYTHON_VERSION: '3.11'
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/sentinel
+
+# ============================================================
+#  JOB 1 — Code Quality & Linting
+# ============================================================
+jobs:
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: apps/api/requirements.txt
+
+      - name: Install Node deps (web)
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Install Python deps (api)
+        working-directory: apps/api
+        run: pip install -r requirements-dev.txt
+
+      - name: TypeScript type check
+        working-directory: apps/web
+        run: npm run type-check
+
+      - name: ESLint
+        working-directory: apps/web
+        run: npm run lint
+
+      - name: SCSS lint (stylelint)
+        working-directory: apps/web
+        run: npm run lint:scss
+
+      - name: Prettier check
+        working-directory: apps/web
+        run: npm run format:check
+
+      - name: Ruff lint (Python)
+        working-directory: apps/api
+        run: ruff check .
+
+      - name: Black format check (Python)
+        working-directory: apps/api
+        run: black --check .
+
+      - name: MyPy type check (Python)
+        working-directory: apps/api
+        run: mypy . --ignore-missing-imports
+
+# ============================================================
+#  JOB 2 — Unit & Integration Tests (Frontend)
+# ============================================================
+  test-web:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install deps
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Run Jest unit tests
+        working-directory: apps/web
+        run: npm run test:unit -- --coverage --ci
+        env:
+          CI: true
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-coverage
+          path: apps/web/coverage/
+          retention-days: 7
+
+# ============================================================
+#  JOB 3 — Unit & Integration Tests (API / Agents)
+# ============================================================
+  test-api:
+    name: API & Agent Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+      postgres:
+        image: postgres:15-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: sentinel_test
+          POSTGRES_PASSWORD: sentinel_test
+          POSTGRES_DB: sentinel_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: apps/api/requirements.txt
+
+      - name: Install deps
+        working-directory: apps/api
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run pytest (unit tests)
+        working-directory: apps/api
+        run: |
+          pytest tests/unit \
+            --cov=. \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term \
+            -v \
+            --tb=short
+        env:
+          REDIS_URL: redis://localhost:6379
+          DATABASE_URL: postgresql://sentinel_test:sentinel_test@localhost:5432/sentinel_test
+          PACIFICA_API_URL: https://test-api.pacifica.fi/api/v1
+          PACIFICA_WS_URL: wss://test-ws.pacifica.fi
+          ENVIRONMENT: test
+
+      - name: Run pytest (integration tests)
+        working-directory: apps/api
+        run: |
+          pytest tests/integration \
+            -v \
+            --tb=short \
+            -m "not live_api"
+        env:
+          REDIS_URL: redis://localhost:6379
+          DATABASE_URL: postgresql://sentinel_test:sentinel_test@localhost:5432/sentinel_test
+          ENVIRONMENT: test
+
+      - name: Upload API coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-coverage
+          path: apps/api/coverage.xml
+          retention-days: 7
+
+# ============================================================
+#  JOB 4 — Smart Contract Tests & Static Analysis
+# ============================================================
+  test-contracts:
+    name: Smart Contract Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/contracts/package-lock.json
+
+      - name: Setup Python (for Slither)
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Hardhat deps
+        working-directory: apps/contracts
+        run: npm ci
+
+      - name: Install Slither
+        run: pip install slither-analyzer
+
+      - name: Compile contracts
+        working-directory: apps/contracts
+        run: npx hardhat compile
+
+      - name: Run Hardhat tests
+        working-directory: apps/contracts
+        run: npx hardhat test --network hardhat
+
+      - name: Generate gas report
+        working-directory: apps/contracts
+        run: REPORT_GAS=true npx hardhat test
+        env:
+          REPORT_GAS: true
+
+      - name: Slither static analysis
+        working-directory: apps/contracts
+        run: |
+          slither . \
+            --solc-remaps "@openzeppelin=node_modules/@openzeppelin" \
+            --exclude-dependencies \
+            --json slither-report.json \
+            --sarif slither-report.sarif \
+          || true   # Don't fail — findings are reviewed manually
+
+      - name: Upload Slither report
+        uses: actions/upload-artifact@v4
+        with:
+          name: slither-report
+          path: |
+            apps/contracts/slither-report.json
+            apps/contracts/slither-report.sarif
+          retention-days: 14
+
+      - name: Upload Slither SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: apps/contracts/slither-report.sarif
+          category: slither
+
+# ============================================================
+#  JOB 5 — E2E Tests (Playwright)
+# ============================================================
+  test-e2e:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: [test-web, test-api]
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install deps
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Build Next.js app
+        working-directory: apps/web
+        run: npm run build
+        env:
+          NEXT_PUBLIC_PRIVY_APP_ID: ${{ secrets.PRIVY_APP_ID_TEST }}
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_WS_URL: ws://localhost:8000
+          NEXT_PUBLIC_ENVIRONMENT: test
+
+      - name: Start API server (background)
+        working-directory: apps/api
+        run: |
+          pip install -r requirements.txt
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+        env:
+          REDIS_URL: redis://localhost:6379
+          ENVIRONMENT: test
+          PACIFICA_API_URL: https://test-api.pacifica.fi/api/v1
+
+      - name: Run Playwright E2E tests
+        working-directory: apps/web
+        run: npx playwright test
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          CI: true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
+
+# ============================================================
+#  JOB 6 — Security Scanning
+# ============================================================
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner (filesystem)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: trivy
+
+      - name: Audit npm packages (web)
+        working-directory: apps/web
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Check for secrets in code (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# ============================================================
+#  JOB 7 — Build Docker Images
+# ============================================================
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [test-web, test-api, test-contracts]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      web-image: ${{ steps.meta-web.outputs.tags }}
+      api-image: ${{ steps.meta-api.outputs.tags }}
+      workers-image: ${{ steps.meta-workers.outputs.tags }}
+      image-digest-web: ${{ steps.push-web.outputs.digest }}
+      image-digest-api: ${{ steps.push-api.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Web (Next.js) image ──────────────────────────────
+      - name: Docker metadata (web)
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-web
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build & push web image
+        id: push-web
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/web
+          file: apps/web/Dockerfile
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_ENVIRONMENT=${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+
+      # ── API (FastAPI) image ──────────────────────────────
+      - name: Docker metadata (api)
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-api
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build & push api image
+        id: push-api
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/api
+          file: apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Workers (AI agents) image ────────────────────────
+      - name: Docker metadata (workers)
+        id: meta-workers
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-workers
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build & push workers image
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/api
+          file: apps/api/Dockerfile.workers
+          push: true
+          tags: ${{ steps.meta-workers.outputs.tags }}
+          labels: ${{ steps.meta-workers.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+# ============================================================
+#  JOB 8 — Deploy to STAGING (dev branch)
+# ============================================================
+  deploy-staging:
+    name: Deploy → Staging
+    runs-on: ubuntu-latest
+    needs: [build-images, test-e2e, security]
+    if: github.ref == 'refs/heads/dev'
+    environment:
+      name: staging
+      url: https://staging.sentinel.app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy web to Railway staging
+        run: |
+          railway up \
+            --service sentinel-web-staging \
+            --environment staging \
+            --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy API to Railway staging
+        run: |
+          railway up \
+            --service sentinel-api-staging \
+            --environment staging \
+            --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy workers to Railway staging
+        run: |
+          railway up \
+            --service sentinel-workers-staging \
+            --environment staging \
+            --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting 60s for Railway services to stabilise..."
+          sleep 60
+
+      - name: Smoke test staging
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            https://staging-api.sentinel.app/health)
+          if [ "$STATUS" != "200" ]; then
+            echo "Staging health check FAILED (HTTP $STATUS)"
+            exit 1
+          fi
+          echo "Staging health check PASSED (HTTP $STATUS)"
+
+      - name: Run Lighthouse audit (staging)
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            https://staging.sentinel.app
+            https://staging.sentinel.app/dashboard
+          budgetPath: .github/lighthouse-budget.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Notify staging deployment
+        uses: slackapi/slack-github-action@v1.26.0
+        if: always()
+        with:
+          payload: |
+            {
+              "text": "🚀 SENTINEL staging deployed\nBranch: `${{ github.ref_name }}`\nCommit: `${{ github.sha }}`\nStatus: ${{ job.status }}\nURL: https://staging.sentinel.app"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+# ============================================================
+#  JOB 9 — Deploy to PRODUCTION (main branch, manual gate)
+# ============================================================
+  deploy-production:
+    name: Deploy → Production
+    runs-on: ubuntu-latest
+    needs: [build-images, test-e2e, security]
+    if: |
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event.inputs.deploy_target == 'production')
+    environment:
+      name: production
+      url: https://sentinel.app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Pre-deployment database migration
+        working-directory: apps/api
+        run: |
+          pip install -r requirements.txt
+          python -m alembic upgrade head
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          ENVIRONMENT: production
+
+      - name: Deploy web to Railway production
+        run: |
+          railway up \
+            --service sentinel-web \
+            --environment production \
+            --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy API to Railway production
+        run: |
+          railway up \
+            --service sentinel-api \
+            --environment production \
+            --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy workers to Railway production
+        run: |
+          railway up \
+            --service sentinel-workers \
+            --environment production \
+            --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Wait for production rollout
+        run: sleep 90
+
+      - name: Production health checks
+        run: |
+          set -e
+
+          # API health
+          API=$(curl -sf https://api.sentinel.app/health | jq -r '.status')
+          [ "$API" == "ok" ] || (echo "API health FAIL" && exit 1)
+
+          # WebSocket
+          WS=$(curl -sf https://api.sentinel.app/health/ws | jq -r '.connected')
+          [ "$WS" == "true" ] || (echo "WebSocket health FAIL" && exit 1)
+
+          # Pacifica API reachability
+          PACIFICA=$(curl -sf https://api.sentinel.app/health/pacifica | jq -r '.reachable')
+          [ "$PACIFICA" == "true" ] || (echo "Pacifica API health FAIL" && exit 1)
+
+          # Redis
+          REDIS=$(curl -sf https://api.sentinel.app/health/redis | jq -r '.connected')
+          [ "$REDIS" == "true" ] || (echo "Redis health FAIL" && exit 1)
+
+          # Agent statuses
+          AGENTS=$(curl -sf https://api.sentinel.app/health/agents | jq -r '.all_healthy')
+          [ "$AGENTS" == "true" ] || (echo "Agents health FAIL" && exit 1)
+
+          echo "✅ All production health checks PASSED"
+
+      - name: Run Lighthouse audit (production)
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            https://sentinel.app
+            https://sentinel.app/dashboard
+          budgetPath: .github/lighthouse-budget.json
+          uploadArtifacts: true
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: SENTINEL v${{ github.run_number }}
+          body: |
+            ## SENTINEL Release v${{ github.run_number }}
+
+            **Commit:** ${{ github.sha }}
+            **Deployed:** ${{ github.event.head_commit.timestamp }}
+
+            ### Deployed services
+            - Web: `${{ needs.build-images.outputs.web-image }}`
+            - API: `${{ needs.build-images.outputs.api-image }}`
+            - Workers: `${{ needs.build-images.outputs.workers-image }}`
+
+            ### What changed
+            ${{ github.event.head_commit.message }}
+          draft: false
+          prerelease: false
+
+      - name: Notify production deployment
+        uses: slackapi/slack-github-action@v1.26.0
+        if: always()
+        with:
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅' || '🚨' }} SENTINEL PRODUCTION ${{ job.status == 'success' && 'DEPLOYED' || 'DEPLOYMENT FAILED' }}\nCommit: `${{ github.sha }}`\nURL: https://sentinel.app\nRelease: v${{ github.run_number }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Production deployment failed — triggering Railway rollback..."
+          railway rollback --service sentinel-web --environment production
+          railway rollback --service sentinel-api --environment production
+          railway rollback --service sentinel-workers --environment production
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+# ============================================================
+#  JOB 10 — Smart Contract Deployment (manual only)
+# ============================================================
+  deploy-contracts:
+    name: Deploy Smart Contracts
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main'
+    environment:
+      name: contracts
+      url: https://arbiscan.io
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/contracts/package-lock.json
+
+      - name: Install deps
+        working-directory: apps/contracts
+        run: npm ci
+
+      - name: Compile contracts
+        working-directory: apps/contracts
+        run: npx hardhat compile
+
+      - name: Run full test suite before deploy
+        working-directory: apps/contracts
+        run: npx hardhat test --network hardhat
+
+      - name: Deploy SentinelAlertRegistry to Arbitrum
+        working-directory: apps/contracts
+        run: |
+          npx hardhat run scripts/deploy-alert-registry.ts \
+            --network arbitrum
+        env:
+          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
+
+      - name: Verify contract on Arbiscan
+        working-directory: apps/contracts
+        run: |
+          npx hardhat verify \
+            --network arbitrum \
+            $(cat deployments/arbitrum/SentinelAlertRegistry.json | jq -r '.address')
+        env:
+          ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
+
+      - name: Update contract address in config
+        run: |
+          ADDRESS=$(cat apps/contracts/deployments/arbitrum/SentinelAlertRegistry.json | jq -r '.address')
+          echo "Deployed SentinelAlertRegistry at $ADDRESS"
+          echo "CONTRACT_ADDRESS=$ADDRESS" >> $GITHUB_ENV
+
+      - name: Upload deployment artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-deployments
+          path: apps/contracts/deployments/
+          retention-days: 90
+
+      - name: Notify contract deployment
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "📜 SentinelAlertRegistry deployed to Arbitrum\nAddress: `${{ env.CONTRACT_ADDRESS }}`\nhttps://arbiscan.io/address/${{ env.CONTRACT_ADDRESS }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

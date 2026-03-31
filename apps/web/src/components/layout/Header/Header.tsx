@@ -1,10 +1,10 @@
 'use client';
 
-import { usePrivy } from '@privy-io/react-auth';
+import { useAuth } from '@/hooks/useAuth';
 import styles from './Header.module.scss';
 
 export function Header() {
-  const { login, logout, authenticated, user } = usePrivy();
+  const { login, logout, authenticated, walletAddress } = useAuth();
 
   return (
     <header className="app-header">
@@ -22,9 +22,9 @@ export function Header() {
         {authenticated ? (
           <div className={styles.userSection}>
             <span className={styles.address}>
-              {user?.wallet?.address
-                ? `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}`
-                : user?.email?.address || 'Connected'}
+              {walletAddress
+                ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+                : 'Connected'}
             </span>
             <button
               className={styles.authButton}
