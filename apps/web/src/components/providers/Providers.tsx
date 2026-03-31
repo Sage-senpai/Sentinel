@@ -1,12 +1,32 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { PrivyProvider } from '@privy-io/react-auth';
 
-/**
- * App providers wrapper.
- * Phase 1: Add PrivyProvider here when NEXT_PUBLIC_PRIVY_APP_ID is set.
- * Phase 2: Add SocketProvider for real-time alerts.
- */
+const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+
 export function Providers({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  if (!PRIVY_APP_ID) {
+    return <>{children}</>;
+  }
+
+  return (
+    <PrivyProvider
+      appId={PRIVY_APP_ID}
+      config={{
+        appearance: {
+          theme: 'dark',
+          accentColor: '#00e5ff',
+        },
+        loginMethods: ['wallet', 'email', 'google'],
+        embeddedWallets: {
+          ethereum: {
+            createOnLogin: 'users-without-wallets',
+          },
+        },
+      }}
+    >
+      {children}
+    </PrivyProvider>
+  );
 }

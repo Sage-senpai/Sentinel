@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
+import { IconWallet, IconDisconnect, IconAgents } from '@/components/icons/Icons';
 import styles from './Header.module.scss';
 
 export function Header() {
@@ -16,6 +17,7 @@ export function Header() {
       <div className={styles.right}>
         <div className={styles.status}>
           <span className={styles.statusDot} />
+          <IconAgents size={16} />
           <span className={styles.statusText}>6 Agents Active</span>
         </div>
 
@@ -31,6 +33,7 @@ export function Header() {
               onClick={logout}
               type="button"
             >
+              <IconDisconnect size={16} />
               Disconnect
             </button>
           </div>
@@ -40,6 +43,7 @@ export function Header() {
             onClick={login}
             type="button"
           >
+            <IconWallet size={16} />
             Connect Wallet
           </button>
         )}

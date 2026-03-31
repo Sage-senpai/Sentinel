@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   description:
     'AI-powered liquidation cascade detection, whale tracking, and automated position protection for Pacifica traders.',
   keywords: ['defi', 'liquidation', 'whale-tracking', 'pacifica', 'sentinel'],
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

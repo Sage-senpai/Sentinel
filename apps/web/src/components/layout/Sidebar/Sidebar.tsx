@@ -2,6 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  SentinelLogo,
+  IconRadar,
+  IconWhale,
+  IconShield,
+  IconHedge,
+  IconChart,
+} from '@/components/icons/Icons';
 import styles from './Sidebar.module.scss';
 
 const NAV_ITEMS = [
@@ -12,27 +20,40 @@ const NAV_ITEMS = [
   { href: '/funding-rates', label: 'Funding Rates', icon: 'chart' },
 ] as const;
 
+const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  radar: IconRadar,
+  whale: IconWhale,
+  shield: IconShield,
+  hedge: IconHedge,
+  chart: IconChart,
+};
+
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
     <aside className="app-sidebar">
       <div className={styles.brand}>
-        <span className={styles.logo}>S</span>
+        <SentinelLogo size={36} className={styles.logo} />
         <span className={styles.brandName}>SENTINEL</span>
       </div>
 
       <nav className={styles.nav}>
-        {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`${styles.navItem} ${pathname === item.href ? styles.active : ''}`}
-          >
-            <span className={styles.navIcon}>{getIcon(item.icon)}</span>
-            <span className={styles.navLabel}>{item.label}</span>
-          </Link>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const Icon = ICON_MAP[item.icon];
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`${styles.navItem} ${pathname === item.href ? styles.active : ''}`}
+            >
+              <span className={styles.navIcon}>
+                <Icon size={20} />
+              </span>
+              <span className={styles.navLabel}>{item.label}</span>
+            </Link>
+          );
+        })}
       </nav>
 
       <div className={styles.footer}>
@@ -40,15 +61,4 @@ export function Sidebar() {
       </div>
     </aside>
   );
-}
-
-function getIcon(icon: string): string {
-  const icons: Record<string, string> = {
-    radar: '\u25C9',
-    whale: '\u29B6',
-    shield: '\u25C6',
-    hedge: '\u2616',
-    chart: '\u2593',
-  };
-  return icons[icon] || '\u25CB';
 }

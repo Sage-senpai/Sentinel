@@ -8,15 +8,8 @@
 }
 
 .logo {
-  font-family: var(--font-mono);
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--color-cyan);
-  width: 40px;
-  height: 40px;
-  @include flex-center;
-  border: 2px solid var(--color-cyan);
-  border-radius: 8px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.3));
 }
 
 .brandName {
@@ -60,9 +53,10 @@
 }
 
 .navIcon {
-  font-size: var(--text-lg);
   width: 24px;
-  text-align: center;
+  height: 24px;
+  @include flex-center;
+  flex-shrink: 0;
 }
 
 .navLabel {
