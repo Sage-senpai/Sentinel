@@ -9,15 +9,15 @@
 
 .logo {
   flex-shrink: 0;
-  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.3));
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.35));
 }
 
 .brandName {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-lg);
   font-weight: 700;
   color: var(--color-text-primary);
-  letter-spacing: 0.15em;
+  letter-spacing: 0.12em;
 }
 
 .nav {
@@ -32,31 +32,46 @@
   justify-content: flex-start;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-radius: 8px;
+  border-radius: 12px;
   color: var(--color-text-secondary);
   text-decoration: none;
   font-family: var(--font-sans);
   font-size: var(--text-sm);
   font-weight: 500;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-base);
+  border: 1px solid transparent;
+  position: relative;
 
   &:hover {
     color: var(--color-text-primary);
-    background: rgba(0, 184, 217, 0.08);
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.1);
   }
 }
 
 .active {
   color: var(--color-cyan);
-  background: rgba(0, 184, 217, 0.12);
-  border-left: 3px solid var(--color-cyan);
+  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.15);
+  box-shadow: inset 3px 0 0 var(--color-cyan);
+
+  &:hover {
+    background: rgba(0, 229, 255, 0.12);
+    border-color: rgba(0, 229, 255, 0.2);
+  }
 }
 
 .navIcon {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   @include flex-center;
   flex-shrink: 0;
+  opacity: 0.8;
+
+  .active & {
+    opacity: 1;
+    filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.4));
+  }
 }
 
 .navLabel {
@@ -78,4 +93,5 @@
   color: var(--color-muted);
   display: block;
   text-align: center;
+  opacity: 0.7;
 }

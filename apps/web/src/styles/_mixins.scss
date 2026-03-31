@@ -2,102 +2,117 @@
 //  SENTINEL — SCSS Mixins
 // ============================================================
 
-// ── Glass Panel: frosted glass card/panel effect ────────────
 @mixin glass-panel {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: var(--glass-border);
   border-radius: var(--glass-radius);
+  box-shadow: var(--shadow-card);
 }
 
-// ── Glow Border: animated border glow effect ────────────────
-@mixin glow-border($color: var(--color-teal), $intensity: 0.3) {
-  border: 1px solid $color;
-  box-shadow: 0 0 12px rgba($color, $intensity);
-  transition: box-shadow var(--transition-base);
+@mixin glass-panel-solid {
+  background: var(--glass-bg-solid);
+  border: var(--glass-border);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--shadow-card);
+}
 
+@mixin glass-hover {
+  transition: all var(--transition-base);
   &:hover {
-    box-shadow: 0 0 20px rgba($color, $intensity + 0.15);
+    border-color: var(--color-border-hover);
+    background: var(--color-surface-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
   }
 }
 
-// ── Animated Gradient: mesh gradient background ─────────────
+@mixin glow-border($color: var(--color-teal), $intensity: 0.2) {
+  border: 1px solid rgba($color, 0.3);
+  transition: all var(--transition-base);
+  &:hover {
+    border-color: rgba($color, 0.6);
+    box-shadow: 0 0 24px rgba($color, $intensity);
+  }
+}
+
 @mixin animated-gradient {
-  background: linear-gradient(
-    -45deg,
-    #0a1628,
-    #0d2d50,
-    #0a1628,
-    #051020
-  );
+  background: linear-gradient(-45deg, #060d1f, #0f2042, #0b1730, #060d1f);
   background-size: 400% 400%;
-
   @media (prefers-reduced-motion: no-preference) {
-    animation: ocean-drift 18s ease infinite;
+    animation: ocean-drift 20s ease infinite;
   }
 }
 
-// ── Responsive breakpoints ──────────────────────────────────
+@mixin mesh-gradient {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 229, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(124, 92, 252, 0.06) 0%, transparent 50%),
+    var(--color-navy);
+}
+
+@mixin gradient-text {
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@mixin cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow-cyan);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+}
+
 @mixin mobile {
-  @media (max-width: 768px) {
-    @content;
-  }
+  @media (max-width: 768px) { @content; }
 }
-
 @mixin tablet {
-  @media (max-width: 1024px) {
-    @content;
-  }
+  @media (max-width: 1024px) { @content; }
 }
-
 @mixin desktop {
-  @media (min-width: 1025px) {
-    @content;
-  }
+  @media (min-width: 1025px) { @content; }
 }
-
-// ── Text truncation ─────────────────────────────────────────
 @mixin truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-// ── Scrollbar styling ───────────────────────────────────────
 @mixin custom-scrollbar {
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
     background: var(--color-muted);
-    border-radius: 3px;
-
-    &:hover {
-      background: var(--color-teal);
-    }
+    border-radius: 2px;
+    &:hover { background: var(--color-teal); }
   }
 }
-
-// ── Animation wrapper: only animates with no-preference ─────
 @mixin animate($name, $duration: 1s, $timing: ease, $iteration: 1, $fill: forwards) {
   @media (prefers-reduced-motion: no-preference) {
     animation: $name $duration $timing $iteration $fill;
   }
 }
-
-// ── Flex helpers ────────────────────────────────────────────
 @mixin flex-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 @mixin flex-between {
   display: flex;
   align-items: center;

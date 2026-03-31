@@ -1,0 +1,142 @@
+@use '../../../styles/mixins' as *;
+
+.page {
+  @include mesh-gradient;
+  min-height: 100vh;
+  @include flex-center;
+  padding: var(--space-6);
+  position: relative;
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 500px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(59, 130, 246, 0.2) 0%,
+    rgba(124, 92, 252, 0.1) 30%,
+    transparent 70%
+  );
+  filter: blur(80px);
+  pointer-events: none;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: glow-pulse 8s ease infinite;
+  }
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  @include glass-panel;
+  padding: var(--space-10) var(--space-8);
+  text-align: center;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: fade-in-up 0.6s ease;
+  }
+}
+
+.logoArea {
+  margin-bottom: var(--space-8);
+  filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.3));
+}
+
+.content {
+  margin-bottom: var(--space-8);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: blur-in 0.4s ease;
+  }
+}
+
+.iconCircle {
+  @include flex-center;
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  color: var(--color-cyan);
+  margin: 0 auto var(--space-6);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+}
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+}
+
+.dots {
+  @include flex-center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-muted);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  padding: 0;
+
+  &:hover {
+    background: var(--color-text-secondary);
+  }
+}
+
+.dotActive {
+  width: 24px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--color-blue), var(--color-cyan));
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.nextButton {
+  @include cta-button;
+  width: 100%;
+  font-size: var(--text-base);
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-blue), var(--color-cyan));
+  padding: var(--space-4);
+  background-size: 200% 200%;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: gradient-shift 4s ease infinite;
+  }
+}
+
+.skipButton {
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  cursor: pointer;
+  padding: var(--space-2);
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-text-secondary);
+  }
+}

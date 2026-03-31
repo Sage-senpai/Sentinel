@@ -1,160 +1,93 @@
 // ============================================================
 //  SENTINEL — Keyframe Animations
-//  ALL @keyframes live here — enforced by CI
-//  All animations use only transform + opacity for 60fps
 // ============================================================
 
-// ── 1. data-flash: teal glow when a live value updates ──────
 @keyframes data-flash {
-  0% {
-    box-shadow: 0 0 0 rgba(0, 184, 217, 0);
-  }
-
-  50% {
-    box-shadow: 0 0 16px rgba(0, 184, 217, 0.6);
-  }
-
-  100% {
-    box-shadow: 0 0 0 rgba(0, 184, 217, 0);
-  }
+  0% { box-shadow: 0 0 0 rgba(0, 229, 255, 0); }
+  50% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.5); }
+  100% { box-shadow: 0 0 0 rgba(0, 229, 255, 0); }
 }
 
-// ── 2. shield-pulse: cyan expanding ring on Guard active ────
 @keyframes shield-pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: scale(1.15);
-    opacity: 0.7;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-// ── 3. cascade-alert: red border pulse on CASCADE IMMINENT ──
 @keyframes cascade-alert {
-  0% {
-    border-color: rgba(222, 53, 11, 0.3);
-    box-shadow: 0 0 0 rgba(222, 53, 11, 0);
-  }
-
-  50% {
-    border-color: rgba(222, 53, 11, 1);
-    box-shadow: 0 0 24px rgba(222, 53, 11, 0.5);
-  }
-
-  100% {
-    border-color: rgba(222, 53, 11, 0.3);
-    box-shadow: 0 0 0 rgba(222, 53, 11, 0);
-  }
+  0% { border-color: rgba(255, 61, 87, 0.3); box-shadow: 0 0 0 rgba(255, 61, 87, 0); }
+  50% { border-color: rgba(255, 61, 87, 1); box-shadow: 0 0 30px rgba(255, 61, 87, 0.4); }
+  100% { border-color: rgba(255, 61, 87, 0.3); box-shadow: 0 0 0 rgba(255, 61, 87, 0); }
 }
 
-// ── 4. whale-entry: slide in from right for whale cards ─────
 @keyframes whale-entry {
-  0% {
-    transform: translateX(40px);
-    opacity: 0;
-  }
-
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  0% { transform: translateX(30px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
 }
 
-// ── 5. risk-orb: scale pulse, speed controlled by risk ──────
 @keyframes risk-orb {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.12);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
-// ── 6. sonar-ping: expanding ring from whale markers ────────
 @keyframes sonar-ping {
-  0% {
-    transform: scale(0.5);
-    opacity: 0.8;
-  }
-
-  100% {
-    transform: scale(2.5);
-    opacity: 0;
-  }
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
 }
 
-// ── 7. ocean-drift: body background animation ───────────────
 @keyframes ocean-drift {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  25% {
-    background-position: 50% 100%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  75% {
-    background-position: 50% 0%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  25% { background-position: 50% 100%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 0%; }
+  100% { background-position: 0% 50%; }
 }
 
-// ── 8. fade-in: general purpose fade ────────────────────────
 @keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
-// ── 9. slide-down: alert banner entrance ────────────────────
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes slide-down {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  0% { transform: translateY(-100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
 }
 
-// ── 10. gauge-fill: arc gauge animation ─────────────────────
 @keyframes gauge-fill {
-  0% {
-    stroke-dashoffset: 283;
-  }
+  0% { stroke-dashoffset: 283; }
 }
 
-// ── Reduced motion: respect user preferences ────────────────
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes glow-pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.4; }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes blur-in {
+  0% { filter: blur(12px); opacity: 0; }
+  100% { filter: blur(0); opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

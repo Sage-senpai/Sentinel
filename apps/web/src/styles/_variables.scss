@@ -1,27 +1,37 @@
 // ============================================================
 //  SENTINEL — Design Tokens
-//  All CSS custom properties defined here — enforced by CI
+//  Premium dark finance theme
 // ============================================================
 
 :root {
-  // ── Brand Colors ──────────────────────────────────────────
-  --color-navy: #0a1628;
-  --color-ocean: #0d2d50;
+  // ── Core Palette ──────────────────────────────────────────
+  --color-navy: #060d1f;
+  --color-navy-light: #0b1730;
+  --color-ocean: #0f2042;
+  --color-ocean-light: #152a54;
+  --color-surface: #111c35;
+  --color-surface-hover: #162340;
+
+  // ── Accent Colors ─────────────────────────────────────────
   --color-teal: #00b8d9;
   --color-cyan: #00e5ff;
-  --color-gold: #d4a017;
-  --color-green: #00875a;
-  --color-red: #de350b;
-  --color-muted: #6b7a9b;
+  --color-blue: #3b82f6;
+  --color-purple: #7c5cfc;
+  --color-gold: #f5a623;
+  --color-green: #00c853;
+  --color-red: #ff3d57;
+  --color-muted: #4a5578;
 
   // ── Semantic Colors ───────────────────────────────────────
   --color-bg-primary: var(--color-navy);
-  --color-bg-secondary: var(--color-ocean);
-  --color-text-primary: #e8edf5;
-  --color-text-secondary: #9ba8c4;
+  --color-bg-secondary: var(--color-navy-light);
+  --color-bg-card: rgba(11, 23, 48, 0.7);
+  --color-text-primary: #f0f4fc;
+  --color-text-secondary: #8896b3;
   --color-text-accent: var(--color-cyan);
-  --color-border: rgba(0, 184, 217, 0.15);
-  --color-border-hover: rgba(0, 184, 217, 0.35);
+  --color-border: rgba(59, 130, 246, 0.12);
+  --color-border-hover: rgba(59, 130, 246, 0.3);
+  --color-border-active: rgba(0, 229, 255, 0.5);
 
   // ── Severity Colors ───────────────────────────────────────
   --color-severity-watch: var(--color-gold);
@@ -36,10 +46,11 @@
   --color-intent-unknown: var(--color-muted);
 
   // ── Glass Panel ───────────────────────────────────────────
-  --glass-bg: rgba(13, 45, 80, 0.6);
-  --glass-blur: 12px;
+  --glass-bg: rgba(11, 23, 48, 0.65);
+  --glass-bg-solid: #0b1730;
+  --glass-blur: 20px;
   --glass-border: 1px solid var(--color-border);
-  --glass-radius: 12px;
+  --glass-radius: 16px;
 
   // ── Typography ────────────────────────────────────────────
   --font-mono: 'Space Mono', 'Courier New', monospace;
@@ -52,7 +63,8 @@
   --text-xl: 1.25rem;
   --text-2xl: 1.5rem;
   --text-3xl: 2rem;
-  --text-4xl: 2.5rem;
+  --text-4xl: 2.75rem;
+  --text-5xl: 3.5rem;
 
   // ── Spacing ───────────────────────────────────────────────
   --space-1: 0.25rem;
@@ -65,6 +77,8 @@
   --space-10: 2.5rem;
   --space-12: 3rem;
   --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
 
   // ── Layout ────────────────────────────────────────────────
   --sidebar-width: 260px;
@@ -72,17 +86,21 @@
   --content-max-width: 1440px;
 
   // ── Shadows ───────────────────────────────────────────────
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow-teal: 0 0 20px rgba(0, 184, 217, 0.3);
-  --shadow-glow-cyan: 0 0 20px rgba(0, 229, 255, 0.3);
-  --shadow-glow-red: 0 0 20px rgba(222, 53, 11, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.5);
+  --shadow-glow-teal: 0 0 30px rgba(0, 184, 217, 0.25);
+  --shadow-glow-cyan: 0 0 30px rgba(0, 229, 255, 0.25);
+  --shadow-glow-blue: 0 0 30px rgba(59, 130, 246, 0.25);
+  --shadow-glow-red: 0 0 30px rgba(255, 61, 87, 0.25);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
   // ── Transitions ───────────────────────────────────────────
-  --transition-fast: 150ms ease;
-  --transition-base: 250ms ease;
-  --transition-slow: 400ms ease;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   // ── Z-Index Scale ─────────────────────────────────────────
   --z-sidebar: 100;
@@ -90,4 +108,5 @@
   --z-modal: 300;
   --z-alert-banner: 400;
   --z-tooltip: 500;
+  --z-overlay: 600;
 }

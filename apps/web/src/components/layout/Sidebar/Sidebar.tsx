@@ -13,7 +13,7 @@ import {
 import styles from './Sidebar.module.scss';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Liquidation Radar', icon: 'radar' },
+  { href: '/dashboard', label: 'Liquidation Radar', icon: 'radar' },
   { href: '/whale-intelligence', label: 'Whale Intelligence', icon: 'whale' },
   { href: '/guard', label: 'SENTINEL Guard', icon: 'shield' },
   { href: '/africa-hedge', label: 'Africa FX Hedge', icon: 'hedge' },
