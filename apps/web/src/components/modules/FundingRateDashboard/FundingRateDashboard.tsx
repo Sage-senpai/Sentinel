@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSocket } from '@/hooks/useSocket';
+import { useApi } from '@/hooks/useApi';
+import * as api from '@/services/api';
 import styles from './FundingRateDashboard.module.scss';
 
-interface FundingRate {
+interface FundingRateUI {
   market: string;
   rate8h: number;
   annualizedApr: number;
   predicted: number[];
-  confidence: { upper: number[]; lower: number[] };
   trend: 'rising' | 'falling' | 'stable';
 }
 
@@ -21,9 +23,51 @@ interface PositionCarry {
 }
 
 export function FundingRateDashboard() {
-  const [rates, setRates] = useState<FundingRate[]>([]);
-  const [carries, setCarries] = useState<PositionCarry[]>([]);
+  const [rates, setRates] = useState<FundingRateUI[]>([]);
+  const [carries] = useState<PositionCarry[]>([]);
   const [selectedMarket, setSelectedMarket] = useState<string | null>(null);
+
+  const { subscribe } = useSocket();
+
+  const { data: apiRates } = useApi(() => api.funding.rates(), { pollInterval: 30000 });
+  const { data: forecast } = useApi(
+    () => selectedMarket ? api.funding.forecast(selectedMarket) : Promise.resolve(null),
+    { pollInterval: 60000, enabled: !!selectedMarket }
+  );
+
+  useEffect(() => {
+    if (apiRates) {
+      setRates(apiRates.map((r) => {
+        const apr = r.annualized_apr;
+        let trend: 'rising' | 'falling' | 'stable' = 'stable';
+        if (apr > 5) trend = 'rising';
+        else if (apr < -5) trend = 'falling';
+
+        return {
+          market: r.market,
+          rate8h: r.rate_8h,
+          annualizedApr: apr,
+          predicted: forecast?.symbol === r.market ? forecast.predictions : [],
+          trend,
+        };
+      }));
+    }
+  }, [apiRates, forecast]);
+
+  // Real-time funding updates
+  useEffect(() => {
+    const unsub = subscribe('funding', (raw: unknown) => {
+      const event = raw as { symbol: string; rate: number; markPrice: number };
+      setRates((prev) =>
+        prev.map((r) =>
+          r.market === event.symbol
+            ? { ...r, rate8h: event.rate, annualizedApr: event.rate * 3 * 365 * 100 }
+            : r
+        )
+      );
+    });
+    return unsub;
+  }, [subscribe]);
 
   const formatRate = (rate: number): string => {
     const sign = rate >= 0 ? '+' : '';
@@ -39,9 +83,7 @@ export function FundingRateDashboard() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2>Funding Rate Intelligence</h2>
-        <p className={styles.subtitle}>
-          Live rates, 4-epoch forecast, and carry cost analysis
-        </p>
+        <p className={styles.subtitle}>Live rates, 4-epoch forecast, and carry cost analysis</p>
       </div>
 
       <div className={styles.layout}>
@@ -61,9 +103,7 @@ export function FundingRateDashboard() {
               <tbody>
                 {rates.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className={styles.emptyRow}>
-                      Loading funding rates from Pacifica...
-                    </td>
+                    <td colSpan={5} className={styles.emptyRow}>Loading funding rates from Pacifica...</td>
                   </tr>
                 ) : (
                   rates.map((r) => (
@@ -72,32 +112,20 @@ export function FundingRateDashboard() {
                       className={`${styles.row} ${selectedMarket === r.market ? styles.selectedRow : ''}`}
                       onClick={() => setSelectedMarket(r.market)}
                     >
-                      <td className={styles.marketCell}>
-                        {r.market}
-                      </td>
-                      <td
-                        className={`${styles.rateCell} ${r.rate8h >= 0 ? styles.positive : styles.negative}`}
-                      >
+                      <td className={styles.marketCell}>{r.market}</td>
+                      <td className={`${styles.rateCell} ${r.rate8h >= 0 ? styles.positive : styles.negative}`}>
                         {formatRate(r.rate8h)}
                       </td>
-                      <td
-                        className={`${styles.aprCell} ${r.annualizedApr >= 0 ? styles.positive : styles.negative}`}
-                      >
+                      <td className={`${styles.aprCell} ${r.annualizedApr >= 0 ? styles.positive : styles.negative}`}>
                         {formatApr(r.annualizedApr)}
                       </td>
                       <td className={styles.trendCell}>
                         <span className={styles[r.trend]}>
-                          {r.trend === 'rising'
-                            ? '\u2191'
-                            : r.trend === 'falling'
-                              ? '\u2193'
-                              : '\u2192'}
+                          {r.trend === 'rising' ? '\u2191' : r.trend === 'falling' ? '\u2193' : '\u2192'}
                         </span>
                       </td>
                       <td className={styles.rateCell}>
-                        {r.predicted[0]
-                          ? formatRate(r.predicted[0])
-                          : '--'}
+                        {r.predicted[0] ? formatRate(r.predicted[0]) : '--'}
                       </td>
                     </tr>
                   ))
@@ -109,14 +137,10 @@ export function FundingRateDashboard() {
 
         <div className={styles.chartSection}>
           <h3>
-            {selectedMarket
-              ? `${selectedMarket} — 30-Day History & Forecast`
-              : 'Select a market to view forecast'}
+            {selectedMarket ? `${selectedMarket} — 30-Day History & Forecast` : 'Select a market to view forecast'}
           </h3>
           <div className={styles.chartPlaceholder}>
-            {selectedMarket
-              ? 'Chart rendering with D3.js...'
-              : 'Click a market row to view historical and predicted rates'}
+            {selectedMarket ? 'Chart rendering with D3.js...' : 'Click a market row to view historical and predicted rates'}
           </div>
         </div>
 
@@ -130,20 +154,14 @@ export function FundingRateDashboard() {
                   <div className={styles.carryMetrics}>
                     <div className={styles.carryMetric}>
                       <span className={styles.carryLabel}>Per Epoch (8h)</span>
-                      <span
-                        className={`${styles.carryValue} ${c.carryPerEpoch >= 0 ? styles.positive : styles.negative}`}
-                      >
-                        {c.carryPerEpoch >= 0 ? '+' : ''}$
-                        {c.carryPerEpoch.toFixed(2)}
+                      <span className={`${styles.carryValue} ${c.carryPerEpoch >= 0 ? styles.positive : styles.negative}`}>
+                        {c.carryPerEpoch >= 0 ? '+' : ''}${c.carryPerEpoch.toFixed(2)}
                       </span>
                     </div>
                     <div className={styles.carryMetric}>
                       <span className={styles.carryLabel}>Per Day</span>
-                      <span
-                        className={`${styles.carryValue} ${c.carryPerDay >= 0 ? styles.positive : styles.negative}`}
-                      >
-                        {c.carryPerDay >= 0 ? '+' : ''}$
-                        {c.carryPerDay.toFixed(2)}
+                      <span className={`${styles.carryValue} ${c.carryPerDay >= 0 ? styles.positive : styles.negative}`}>
+                        {c.carryPerDay >= 0 ? '+' : ''}${c.carryPerDay.toFixed(2)}
                       </span>
                     </div>
                   </div>
