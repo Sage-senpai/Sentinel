@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 
 interface AuthState {
   authenticated: boolean;
@@ -11,22 +11,30 @@ interface AuthState {
   ready: boolean;
 }
 
-let privyHook: typeof import('@privy-io/react-auth').usePrivy | null = null;
+export function useAuth(): AuthState {
+  const hasPrivyAppId = !!process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require('@privy-io/react-auth');
-  privyHook = mod.usePrivy;
-} catch {
-  // Privy not available — use stub
+  if (hasPrivyAppId) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return usePrivyAuth();
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useStubAuth();
 }
 
 function usePrivyAuth(): AuthState {
-  const privy = privyHook!();
+  // Dynamic import at module level — Privy must be installed
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { usePrivy, useWallets } = require('@privy-io/react-auth');
+  const privy = usePrivy();
+  const { wallets } = useWallets();
 
   const walletAddress = useMemo(() => {
-    return privy.user?.wallet?.address ?? null;
-  }, [privy.user?.wallet?.address]);
+    // Prefer embedded wallet, then external
+    if (privy.user?.wallet?.address) return privy.user.wallet.address;
+    if (wallets?.[0]?.address) return wallets[0].address;
+    return null;
+  }, [privy.user?.wallet?.address, wallets]);
 
   const email = useMemo(() => {
     return privy.user?.email?.address ?? null;
@@ -44,34 +52,25 @@ function usePrivyAuth(): AuthState {
 
 function useStubAuth(): AuthState {
   const [authenticated, setAuthenticated] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   const login = useCallback(() => {
     setAuthenticated(true);
+    // Generate a demo address for development
+    setWalletAddress('0xDEMO' + Math.random().toString(16).slice(2, 10) + '...DEMO');
   }, []);
 
   const logout = useCallback(() => {
     setAuthenticated(false);
+    setWalletAddress(null);
   }, []);
 
   return {
     authenticated,
-    walletAddress: null,
+    walletAddress,
     email: null,
     login,
     logout,
     ready: true,
   };
-}
-
-export function useAuth(): AuthState {
-  const hasPrivyAppId = typeof window !== 'undefined' &&
-    !!process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-
-  if (hasPrivyAppId && privyHook) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return usePrivyAuth();
-  }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useStubAuth();
 }

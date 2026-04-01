@@ -52,6 +52,11 @@
   }
 }
 
+.statusDisconnected {
+  background: var(--color-gold);
+  animation: none;
+}
+
 .statusText {
   font-family: var(--font-sans);
   font-size: var(--text-xs);

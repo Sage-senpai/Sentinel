@@ -1,0 +1,348 @@
+@use '../../../styles/mixins' as *;
+
+.page {
+  min-height: 100vh;
+}
+
+// ── Top Nav ─────────────────────────────────────────────────
+.topNav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  background: rgba(5, 5, 5, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.topNavInner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-6);
+  @include flex-between;
+}
+
+.topNavBrand {
+  @include flex-center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: 0.06em;
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.docsLabel {
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--color-border);
+  margin-left: var(--space-2);
+}
+
+.topNavLinks {
+  @include flex-center;
+  gap: var(--space-5);
+  a {
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    &:hover { color: var(--color-text-primary); }
+  }
+}
+
+// ── Layout ──────────────────────────────────────────────────
+.layout {
+  display: flex;
+  padding-top: 56px;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  width: 220px;
+  height: calc(100vh - 56px);
+  padding: var(--space-6) var(--space-4);
+  border-right: 1px solid var(--color-border);
+  background: rgba(5, 5, 5, 0.6);
+  backdrop-filter: blur(16px);
+  overflow-y: auto;
+  @include custom-scrollbar;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  @include mobile { display: none; }
+}
+
+.sidebarLink {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding: 6px var(--space-3);
+  border-radius: 6px;
+  transition: all 0.15s;
+
+  &:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.content {
+  margin-left: 220px;
+  flex: 1;
+  max-width: 900px;
+  padding: var(--space-8) var(--space-8);
+
+  @include mobile { margin-left: 0; }
+}
+
+.section {
+  padding-bottom: var(--space-12);
+  margin-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-child { border-bottom: none; }
+
+  h1 {
+    font-size: var(--text-3xl);
+    margin-bottom: var(--space-4);
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-4);
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-3);
+    margin-top: var(--space-6);
+  }
+
+  p {
+    font-size: var(--text-base);
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    margin-bottom: var(--space-4);
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-teal);
+    background: rgba(0, 212, 170, 0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+}
+
+.lead {
+  font-size: var(--text-md) !important;
+  color: var(--color-text-secondary);
+}
+
+// ── Architecture Grid ───────────────────────────────────────
+.archGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  @include mobile { grid-template-columns: 1fr; }
+}
+
+.archCard {
+  @include glass-card;
+  padding: var(--space-4);
+  h4 { font-size: var(--text-sm); margin-bottom: var(--space-2); }
+  p { font-size: var(--text-xs); margin-bottom: 0; }
+}
+
+// ── Code Block ──────────────────────────────────────────────
+.codeBlock {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  overflow-x: auto;
+  @include custom-scrollbar;
+
+  code {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-primary);
+    background: none;
+    padding: 0;
+    white-space: pre;
+    line-height: 1.8;
+  }
+}
+
+.comment { color: var(--color-text-tertiary); }
+
+// ── Service Table ───────────────────────────────────────────
+.serviceTable {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--space-4);
+}
+
+.serviceRow {
+  @include flex-between;
+  padding: 8px var(--space-3);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+
+  span { font-size: var(--text-sm); color: var(--color-text-secondary); }
+  code { font-size: var(--text-xs); }
+}
+
+// ── Module Grid ─────────────────────────────────────────────
+.moduleGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.moduleCard {
+  @include glass-card;
+  padding: var(--space-4);
+  h4 { font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--space-1); }
+  p { font-size: var(--text-xs); margin-bottom: var(--space-2); }
+  code { font-size: var(--text-2xs); }
+}
+
+// ── Agent Grid ──────────────────────────────────────────────
+.agentGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  @include mobile { grid-template-columns: 1fr; }
+}
+
+.agentCard {
+  @include glass-card;
+  padding: var(--space-4);
+  p { font-size: var(--text-xs); margin-bottom: 0; }
+}
+
+.agentHeader {
+  @include flex-between;
+  margin-bottom: var(--space-2);
+  h4 { font-size: var(--text-sm); }
+  code { font-size: var(--text-2xs); color: var(--color-blue); background: var(--color-blue-ghost); }
+}
+
+// ── API Table ───────────────────────────────────────────────
+.apiTable {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+
+.apiHeader, .apiRow {
+  display: grid;
+  grid-template-columns: 60px 1fr 50px 1fr;
+  gap: var(--space-3);
+  padding: 8px var(--space-3);
+  align-items: center;
+  font-size: var(--text-xs);
+
+  @include mobile {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}
+
+.apiHeader {
+  background: rgba(255, 255, 255, 0.03);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: var(--text-2xs);
+}
+
+.apiRow {
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  color: var(--color-text-secondary);
+  code { font-size: var(--text-2xs); }
+}
+
+.method {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.methodGET { color: var(--color-teal); background: rgba(0, 212, 170, 0.08); }
+.methodPUT { color: var(--color-blue); background: var(--color-blue-ghost); }
+.methodPOST { color: var(--color-gold); background: rgba(255, 184, 0, 0.08); }
+
+// ── WebSocket Channels ──────────────────────────────────────
+.wsChannel {
+  margin-bottom: var(--space-4);
+}
+
+.wsHeader {
+  @include flex-center;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  span { font-size: var(--text-xs); color: var(--color-text-secondary); }
+}
+
+.wsName {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm) !important;
+  font-weight: 600;
+  color: var(--color-blue) !important;
+  background: var(--color-blue-ghost) !important;
+  padding: 3px 8px !important;
+}
+
+// ── Tier Table ──────────────────────────────────────────────
+.tierTable {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+
+.tierHeader, .tierRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: var(--space-2);
+  padding: 8px var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.tierHeader {
+  background: rgba(255, 255, 255, 0.03);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: var(--text-2xs);
+}
+
+.tierRow {
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  color: var(--color-text-secondary);
+}
+
+.tierNote {
+  font-size: var(--text-xs) !important;
+  color: var(--color-teal) !important;
+  font-style: italic;
+}

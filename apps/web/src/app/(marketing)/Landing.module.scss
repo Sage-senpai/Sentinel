@@ -412,16 +412,188 @@
   }
 }
 
+// ── Stats Ticker ────────────────────────────────────────────
+.statsTicker {
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.01);
+  padding: var(--space-6) var(--space-6);
+}
+
+.statsInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-4);
+
+  @include tablet { grid-template-columns: repeat(3, 1fr); }
+  @include mobile { grid-template-columns: repeat(2, 1fr); }
+}
+
+.tickerStat {
+  text-align: center;
+}
+
+.tickerValue {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.tickerLabel {
+  font-size: var(--text-2xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+// ── How It Works ────────────────────────────────────────────
+.howItWorks {
+  padding: var(--space-24) var(--space-6);
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+
+  @include mobile { grid-template-columns: 1fr; }
+}
+
+.stepCard {
+  @include glass-card;
+  padding: var(--space-6);
+  position: relative;
+
+  h3 {
+    font-size: var(--text-md);
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+  }
+
+  p {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+  }
+}
+
+.stepNumber {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  background: var(--gradient-blue-teal);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: var(--space-3);
+  opacity: 0.6;
+}
+
+// ── Sponsors ────────────────────────────────────────────────
+.sponsors {
+  padding: var(--space-12) var(--space-6);
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.sponsorsLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-bottom: var(--space-6);
+}
+
+.sponsorGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-3);
+
+  @include tablet { grid-template-columns: repeat(3, 1fr); }
+  @include mobile { grid-template-columns: repeat(2, 1fr); }
+}
+
+.sponsorCard {
+  @include glass-subtle;
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: var(--color-border-hover); }
+}
+
+.sponsorName {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.sponsorRole {
+  display: block;
+  font-size: var(--text-2xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+// ── FAQ ─────────────────────────────────────────────────────
+.faq {
+  padding: var(--space-24) var(--space-6);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.faqGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+.faqCard {
+  @include glass-card;
+  padding: var(--space-5);
+  transition: border-color 0.2s;
+
+  &:hover { border-color: var(--color-border-hover); }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+    color: var(--color-text-primary);
+  }
+
+  p {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+  }
+}
+
 // ── Footer ──────────────────────────────────────────────────
 .footer {
   border-top: 1px solid var(--color-border);
-  padding: var(--space-6);
+  padding: var(--space-8) var(--space-6);
 }
 
 .footerInner {
   max-width: 1200px;
   margin: 0 auto;
   @include flex-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
 }
 
 .footerBrand {
@@ -432,6 +604,17 @@
   color: var(--color-text-primary);
   letter-spacing: 0.06em;
   font-size: var(--text-sm);
+}
+
+.footerLinks {
+  @include flex-center;
+  gap: var(--space-5);
+
+  a {
+    font-size: var(--text-xs);
+    color: var(--color-text-tertiary);
+    &:hover { color: var(--color-text-secondary); }
+  }
 }
 
 .footerText {

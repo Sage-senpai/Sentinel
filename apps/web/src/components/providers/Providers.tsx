@@ -16,7 +16,8 @@ export function Providers({ children }: { children: ReactNode }) {
       config={{
         appearance: {
           theme: 'dark',
-          accentColor: '#00e5ff',
+          accentColor: '#0066FF',
+          logo: '/icons/sentinel-logo.svg',
         },
         loginMethods: ['wallet', 'email', 'google'],
         embeddedWallets: {
