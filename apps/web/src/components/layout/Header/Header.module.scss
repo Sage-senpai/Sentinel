@@ -2,53 +2,53 @@
 
 .left {
   @include flex-center;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .title {
   font-family: var(--font-sans);
-  font-size: var(--text-xl);
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-primary);
-  letter-spacing: 0.08em;
-
+  letter-spacing: 0.06em;
   @include mobile { display: none; }
 }
 
 .badge {
-  font-family: var(--font-sans);
-  font-size: 0.65rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 600;
   color: var(--color-green);
-  background: rgba(0, 200, 83, 0.1);
-  padding: 3px 8px;
+  background: rgba(0, 200, 83, 0.08);
+  padding: 2px 8px;
   border-radius: 6px;
-  border: 1px solid rgba(0, 200, 83, 0.2);
-  letter-spacing: 0.08em;
+  border: 1px solid rgba(0, 200, 83, 0.15);
+  letter-spacing: 0.06em;
 }
 
 .right {
   @include flex-center;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .status {
   @include flex-center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: 10px;
-  background: rgba(0, 200, 83, 0.06);
-  border: 1px solid rgba(0, 200, 83, 0.1);
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(0, 200, 83, 0.04);
+  border: 1px solid rgba(0, 200, 83, 0.08);
 }
 
 .statusDot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--color-green);
 
   @media (prefers-reduced-motion: no-preference) {
     animation: risk-orb 2s ease infinite;
+    color: var(--color-green);
   }
 }
 
@@ -61,27 +61,28 @@
 
 .userSection {
   @include flex-center;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .address {
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--color-teal);
-  padding: var(--space-2) var(--space-3);
-  background: rgba(0, 184, 217, 0.06);
+  padding: 5px 10px;
+  background: rgba(0, 212, 170, 0.06);
   border-radius: 8px;
-  border: 1px solid rgba(0, 184, 217, 0.15);
+  border: 1px solid rgba(0, 212, 170, 0.1);
 }
 
 .authButton {
   @include cta-button;
-  font-size: var(--text-sm);
-  color: #fff;
-  background: linear-gradient(135deg, var(--color-blue), var(--color-cyan));
-  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--color-text-on-accent);
+  background: var(--color-blue);
+  padding: 6px 14px;
 
   &:hover {
+    background: var(--color-blue-bright);
     box-shadow: var(--shadow-glow-blue);
   }
 }

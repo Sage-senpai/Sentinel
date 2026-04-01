@@ -1,91 +1,130 @@
 // ============================================================
-//  SENTINEL — Keyframe Animations
+//  SENTINEL — Animations
 // ============================================================
 
+// ── Data flash: number update glow ──────────────────────────
 @keyframes data-flash {
-  0% { box-shadow: 0 0 0 rgba(0, 229, 255, 0); }
-  50% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.5); }
-  100% { box-shadow: 0 0 0 rgba(0, 229, 255, 0); }
+  0% { box-shadow: 0 0 0 rgba(0, 212, 170, 0); }
+  50% { box-shadow: 0 0 16px rgba(0, 212, 170, 0.4); }
+  100% { box-shadow: 0 0 0 rgba(0, 212, 170, 0); }
 }
 
+// ── Shield pulse ────────────────────────────────────────────
 @keyframes shield-pulse {
   0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.08); opacity: 0.8; }
+  50% { transform: scale(1.06); opacity: 0.85; }
   100% { transform: scale(1); opacity: 1; }
 }
 
+// ── Cascade alert: red border pulse ─────────────────────────
 @keyframes cascade-alert {
-  0% { border-color: rgba(255, 61, 87, 0.3); box-shadow: 0 0 0 rgba(255, 61, 87, 0); }
-  50% { border-color: rgba(255, 61, 87, 1); box-shadow: 0 0 30px rgba(255, 61, 87, 0.4); }
-  100% { border-color: rgba(255, 61, 87, 0.3); box-shadow: 0 0 0 rgba(255, 61, 87, 0); }
+  0% { border-color: rgba(255, 59, 92, 0.2); box-shadow: 0 0 0 rgba(255, 59, 92, 0); }
+  50% { border-color: rgba(255, 59, 92, 0.8); box-shadow: 0 0 40px rgba(255, 59, 92, 0.3); }
+  100% { border-color: rgba(255, 59, 92, 0.2); box-shadow: 0 0 0 rgba(255, 59, 92, 0); }
 }
 
+// ── Whale entry: slide in ───────────────────────────────────
 @keyframes whale-entry {
-  0% { transform: translateX(30px); opacity: 0; }
+  0% { transform: translateX(24px); opacity: 0; }
   100% { transform: translateX(0); opacity: 1; }
 }
 
+// ── Risk orb pulse ──────────────────────────────────────────
 @keyframes risk-orb {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 currentColor; }
+  50% { transform: scale(1.2); box-shadow: 0 0 8px 2px currentColor; }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 currentColor; }
 }
 
+// ── Sonar ping ──────────────────────────────────────────────
 @keyframes sonar-ping {
-  0% { transform: scale(0.5); opacity: 0.8; }
+  0% { transform: scale(0.5); opacity: 0.6; }
   100% { transform: scale(2.5); opacity: 0; }
 }
 
-@keyframes ocean-drift {
-  0% { background-position: 0% 50%; }
-  25% { background-position: 50% 100%; }
-  50% { background-position: 100% 50%; }
-  75% { background-position: 50% 0%; }
-  100% { background-position: 0% 50%; }
+// ── Blob drift: ambient background blobs ────────────────────
+@keyframes blob-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(30px, -50px) scale(1.05); }
+  66%  { transform: translate(-20px, 20px) scale(0.95); }
+  100% { transform: translate(10px, -30px) scale(1.02); }
 }
 
+// ── Fade in ─────────────────────────────────────────────────
 @keyframes fade-in {
   0% { opacity: 0; }
   100% { opacity: 1; }
 }
 
+// ── Fade in up (stagger-ready) ──────────────────────────────
 @keyframes fade-in-up {
-  0% { opacity: 0; transform: translateY(24px); }
+  0% { opacity: 0; transform: translateY(16px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
+// ── Slide down: banner entrance ─────────────────────────────
 @keyframes slide-down {
   0% { transform: translateY(-100%); opacity: 0; }
   100% { transform: translateY(0); opacity: 1; }
 }
 
+// ── Gauge fill ──────────────────────────────────────────────
 @keyframes gauge-fill {
   0% { stroke-dashoffset: 283; }
 }
 
+// ── Float: gentle bobbing ───────────────────────────────────
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-  100% { transform: translateY(0px); }
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
 }
 
+// ── Glow pulse: ambient glow intensity ──────────────────────
 @keyframes glow-pulse {
-  0% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0.4; }
+  0% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.3; }
 }
 
+// ── Gradient shift: CTA button shimmer ──────────────────────
 @keyframes gradient-shift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
+// ── Blur in ─────────────────────────────────────────────────
 @keyframes blur-in {
-  0% { filter: blur(12px); opacity: 0; }
-  100% { filter: blur(0); opacity: 1; }
+  0% { filter: blur(8px); opacity: 0; transform: scale(0.97); }
+  100% { filter: blur(0); opacity: 1; transform: scale(1); }
 }
 
+// ── Skeleton shimmer ────────────────────────────────────────
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ── Border spin (animated gradient border) ──────────────────
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-spin {
+  to { --border-angle: 360deg; }
+}
+
+// ── Stagger children entry ──────────────────────────────────
+@for $i from 1 through 12 {
+  .stagger-#{$i} {
+    animation-delay: #{$i * 0.06}s;
+  }
+}
+
+// ── Reduced motion ──────────────────────────────────────────
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

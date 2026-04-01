@@ -1,9 +1,11 @@
 // ============================================================
-//  SENTINEL — SCSS Mixins
+//  SENTINEL — Mixins
 // ============================================================
 
-@mixin glass-panel {
+// ── Glass Panels ────────────────────────────────────────────
+@mixin glass-card {
   background: var(--glass-bg);
+  background-image: var(--gradient-card);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: var(--glass-border);
@@ -11,55 +13,41 @@
   box-shadow: var(--shadow-card);
 }
 
-@mixin glass-panel-solid {
-  background: var(--glass-bg-solid);
-  border: var(--glass-border);
-  border-radius: var(--glass-radius);
-  box-shadow: var(--shadow-card);
+@mixin glass-subtle {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
 }
 
-@mixin glass-hover {
-  transition: all var(--transition-base);
+// ── Card Hover (the premium translateY + glow) ──────────────
+@mixin card-hover {
+  transition: all 0.35s var(--ease-standard);
+  transform: translateY(0) translateZ(0);
+  will-change: transform, box-shadow;
+
   &:hover {
+    transform: translateY(-2px) translateZ(0);
     border-color: var(--color-border-hover);
-    background: var(--color-surface-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    background: var(--glass-bg-hover);
+    box-shadow: var(--shadow-md),
+      0 4px 24px rgba(0, 102, 255, 0.06);
+  }
+
+  &:active {
+    transform: translateY(0) translateZ(0);
+    transition-duration: 0.1s;
   }
 }
 
-@mixin glow-border($color: var(--color-teal), $intensity: 0.2) {
-  border: 1px solid rgba($color, 0.3);
-  transition: all var(--transition-base);
-  &:hover {
-    border-color: rgba($color, 0.6);
-    box-shadow: 0 0 24px rgba($color, $intensity);
-  }
-}
-
-@mixin animated-gradient {
-  background: linear-gradient(-45deg, #060d1f, #0f2042, #0b1730, #060d1f);
-  background-size: 400% 400%;
-  @media (prefers-reduced-motion: no-preference) {
-    animation: ocean-drift 20s ease infinite;
-  }
-}
-
-@mixin mesh-gradient {
-  background:
-    radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(0, 229, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(124, 92, 252, 0.06) 0%, transparent 50%),
-    var(--color-navy);
-}
-
+// ── Gradient Text ───────────────────────────────────────────
 @mixin gradient-text {
-  background: linear-gradient(135deg, var(--color-cyan), var(--color-blue));
+  background: var(--gradient-blue-teal);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
+// ── CTA Button ──────────────────────────────────────────────
 @mixin cta-button {
   display: inline-flex;
   align-items: center;
@@ -67,54 +55,98 @@
   gap: var(--space-2);
   font-family: var(--font-sans);
   font-weight: 600;
+  font-size: var(--text-base);
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: all 0.35s var(--ease-standard);
+  text-decoration: none;
   &:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-glow-cyan);
+    box-shadow: var(--shadow-glow-blue);
   }
   &:active {
     transform: translateY(0);
+    transition-duration: 0.1s;
   }
 }
 
-@mixin mobile {
-  @media (max-width: 768px) { @content; }
-}
-@mixin tablet {
-  @media (max-width: 1024px) { @content; }
-}
-@mixin desktop {
-  @media (min-width: 1025px) { @content; }
-}
+// ── Responsive ──────────────────────────────────────────────
+@mixin mobile { @media (max-width: 768px) { @content; } }
+@mixin tablet { @media (max-width: 1024px) { @content; } }
+@mixin desktop { @media (min-width: 1025px) { @content; } }
+
+// ── Utilities ───────────────────────────────────────────────
 @mixin truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 @mixin custom-scrollbar {
   &::-webkit-scrollbar { width: 4px; }
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
-    background: var(--color-muted);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 2px;
-    &:hover { background: var(--color-teal); }
+    &:hover { background: rgba(255, 255, 255, 0.15); }
   }
 }
-@mixin animate($name, $duration: 1s, $timing: ease, $iteration: 1, $fill: forwards) {
-  @media (prefers-reduced-motion: no-preference) {
-    animation: $name $duration $timing $iteration $fill;
-  }
-}
+
 @mixin flex-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 @mixin flex-between {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+// ── Gradient Border (pseudo-element technique) ──────────────
+@mixin gradient-border($radius: 16px) {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: $radius;
+    padding: 1px;
+    background: linear-gradient(
+      145deg,
+      rgba(0, 102, 255, 0.4) 0%,
+      rgba(0, 212, 170, 0.15) 50%,
+      transparent 80%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+// ── Skeleton Shimmer ────────────────────────────────────────
+@mixin skeleton($w: 100%, $h: 20px, $r: 8px) {
+  width: $w;
+  height: $h;
+  border-radius: $r;
+  background: linear-gradient(
+    90deg,
+    var(--color-elevated) 0%,
+    #191919 40%,
+    #222222 50%,
+    #191919 60%,
+    var(--color-elevated) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
 }

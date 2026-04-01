@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import '@/styles/global.scss';
 import { Providers } from '@/components/providers/Providers';
+import { AmbientBackground } from '@/components/layout/AmbientBackground';
 
 export const metadata: Metadata = {
   title: 'SENTINEL — AI-Powered Liquidation Defense',
@@ -17,6 +18,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <AmbientBackground />
+        <div className="noise-overlay" />
         <Providers>{children}</Providers>
       </body>
     </html>

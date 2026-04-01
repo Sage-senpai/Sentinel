@@ -7,9 +7,7 @@
 }
 
 .header {
-  h2 {
-    font-size: var(--text-2xl);
-  }
+  h2 { font-size: var(--text-xl); }
 }
 
 .subtitle {
@@ -22,25 +20,22 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-6);
-
-  @include tablet {
-    grid-template-columns: 1fr;
-  }
+  @include tablet { grid-template-columns: 1fr; }
 }
 
-// ── Input Section ───────────────────────────────────────────
 .inputSection {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
 }
 
 .currencySelector {
   h4 {
-    font-size: var(--text-sm);
-    color: var(--color-text-secondary);
+    font-size: var(--text-2xs);
+    color: var(--color-text-tertiary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
+    font-weight: 600;
     margin-bottom: var(--space-3);
   }
 }
@@ -48,212 +43,200 @@
 .currencyGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .currencyCard {
-  @include glass-panel;
+  @include glass-card;
   @include flex-center;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
+  gap: var(--space-1);
+  padding: var(--space-3);
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all var(--transition-fast);
-  background: transparent;
+  transition: all 0.25s var(--ease-standard);
+  background: rgba(255, 255, 255, 0.02);
+  color: inherit;
+  font: inherit;
 
   &:hover {
     border-color: var(--color-border-hover);
-    background: rgba(0, 184, 217, 0.05);
+    background: rgba(255, 255, 255, 0.04);
   }
 }
 
 .selectedCurrency {
-  border-color: var(--color-cyan);
-  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 102, 255, 0.3) !important;
+  background: var(--color-blue-ghost) !important;
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.08);
 }
 
-.flag {
-  font-size: var(--text-3xl);
-}
+.flag { font-size: var(--text-2xl); }
 
 .currencyCode {
   font-family: var(--font-mono);
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-primary);
 }
 
 .currencyName {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
+  font-size: var(--text-2xs);
+  color: var(--color-text-tertiary);
 }
 
 .fxRate {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-size: var(--text-2xs);
   color: var(--color-teal);
-
   @media (prefers-reduced-motion: no-preference) {
-    &.updated {
-      animation: data-flash 0.6s ease;
-    }
+    &.updated { animation: data-flash 0.5s ease; }
   }
 }
 
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 6px;
 }
 
 .label {
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-secondary);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .input {
   font-family: var(--font-mono);
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   color: var(--color-text-primary);
-  background: rgba(13, 45, 80, 0.4);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: var(--space-3) var(--space-4);
+  border-radius: 10px;
+  padding: 10px var(--space-3);
   outline: none;
-  transition: border-color var(--transition-fast);
+  transition: border-color 0.2s;
 
-  &:focus {
-    border-color: var(--color-cyan);
-  }
-
-  &::placeholder {
-    color: var(--color-muted);
-  }
+  &:focus { border-color: var(--color-blue); box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1); }
+  &::placeholder { color: var(--color-text-tertiary); }
 }
 
 .slider {
   width: 100%;
-  height: 6px;
+  height: 4px;
   appearance: none;
-  background: rgba(107, 122, 155, 0.3);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
   outline: none;
 
   &::-webkit-slider-thumb {
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: var(--color-cyan);
+    background: var(--color-blue);
     cursor: pointer;
-    border: 2px solid var(--color-navy);
+    border: 2px solid var(--color-base);
+    box-shadow: 0 0 8px rgba(0, 102, 255, 0.4);
+    transition: box-shadow 0.2s;
+
+    &:hover { box-shadow: 0 0 12px rgba(0, 102, 255, 0.6); }
   }
 }
 
 .sliderLabels {
   @include flex-between;
-  font-size: var(--text-xs);
-  color: var(--color-muted);
+  font-size: var(--text-2xs);
+  color: var(--color-text-tertiary);
 }
 
-// ── Result Section ──────────────────────────────────────────
 .resultSection {
   display: flex;
   flex-direction: column;
 }
 
 .resultCard {
-  @include glass-panel;
-  padding: var(--space-6);
+  @include glass-card;
+  padding: var(--space-5);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-
   h3 {
-    font-size: var(--text-lg);
-    color: var(--color-cyan);
+    font-size: var(--text-md);
+    @include gradient-text;
   }
 }
 
 .recommendation {
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   line-height: 1.8;
   color: var(--color-text-primary);
   white-space: pre-wrap;
-  background: rgba(0, 0, 0, 0.2);
-  padding: var(--space-4);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: var(--space-3);
+  border-radius: 10px;
   border: 1px solid var(--color-border);
 }
 
 .resultMetrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .metric {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 2px;
   padding: var(--space-3);
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
 }
 
 .metricLabel {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
+  font-size: var(--text-2xs);
+  color: var(--color-text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  font-weight: 500;
 }
 
 .metricValue {
   font-family: var(--font-mono);
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-primary);
+  letter-spacing: -0.02em;
 }
 
-.positive {
-  color: var(--color-green);
-}
-
-.negative {
-  color: var(--color-red);
-}
+.positive { color: var(--color-teal); }
+.negative { color: var(--color-red); }
 
 .ctaButton {
-  font-family: var(--font-sans);
+  @include cta-button;
   font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--color-navy);
-  background: linear-gradient(135deg, var(--color-cyan), var(--color-teal));
-  border: none;
-  padding: var(--space-4) var(--space-6);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  text-align: center;
+  color: var(--color-text-on-accent);
+  background: var(--color-blue);
+  padding: 12px var(--space-6);
   margin-top: var(--space-2);
+  width: 100%;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-glow-cyan);
+  @media (prefers-reduced-motion: no-preference) {
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-teal) 50%, var(--color-blue) 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
   }
 }
 
 .resultEmpty {
-  @include glass-panel;
+  @include glass-card;
   @include flex-center;
   padding: var(--space-16);
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--color-muted);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
 }

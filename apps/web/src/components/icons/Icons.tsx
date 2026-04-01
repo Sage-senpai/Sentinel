@@ -15,12 +15,12 @@ export function SentinelLogo({ size = 40, className }: IconProps) {
     >
       <defs>
         <linearGradient id="sl-g" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#00e5ff" />
-          <stop offset="100%" stopColor="#00b8d9" />
+          <stop offset="0%" stopColor="#0066FF" />
+          <stop offset="100%" stopColor="#00D4AA" />
         </linearGradient>
         <linearGradient id="sl-i" x1="12" y1="10" x2="36" y2="38" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#00e5ff" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#00b8d9" stopOpacity="0.05" />
+          <stop offset="0%" stopColor="#0066FF" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#00D4AA" stopOpacity="0.05" />
         </linearGradient>
       </defs>
       <path d="M24 2L6 10v14c0 11.1 7.7 21.4 18 24 10.3-2.6 18-12.9 18-24V10L24 2z" stroke="url(#sl-g)" strokeWidth="2" fill="url(#sl-i)" />
