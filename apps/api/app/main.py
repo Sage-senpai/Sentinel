@@ -13,15 +13,19 @@ from app.routers import health, markets, alerts, positions, guard, whale, fundin
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup / shutdown lifecycle events."""
-    # Startup: verify Redis connection
-    r = await get_redis()
-    await r.ping()
-    print("[SENTINEL] Redis connected")
+    try:
+        r = await get_redis()
+        await r.ping()
+        print("[SENTINEL] Redis connected")
+    except Exception as e:
+        print(f"[SENTINEL] Redis not available: {e} — starting without cache")
 
     yield
 
-    # Shutdown: close connections
-    await close_redis()
+    try:
+        await close_redis()
+    except Exception:
+        pass
     print("[SENTINEL] Shutdown complete")
 
 
@@ -39,6 +43,7 @@ app.add_middleware(
         "http://localhost:3000",
         "https://sentinel.app",
         "https://staging.sentinel.app",
+        "https://sentinel-lake.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
