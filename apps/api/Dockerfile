@@ -8,4 +8,5 @@ COPY . .
 RUN addgroup --system sentinel && adduser --system --ingroup sentinel sentinel
 USER sentinel
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "--loop", "uvloop", "--http", "httptools"]
+ENV PORT=8000
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2
