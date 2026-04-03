@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.redis import close_redis, get_redis
-from app.routers import health, markets, alerts, positions, guard, whale, funding, hedge
+from app.routers import health, markets, alerts, positions, guard, whale, funding, hedge, referral
 
 
 @asynccontextmanager
@@ -54,3 +54,4 @@ app.include_router(guard.router, prefix="/api/v1", tags=["Guard"])
 app.include_router(whale.router, prefix="/api/v1", tags=["Whale Intel"])
 app.include_router(funding.router, prefix="/api/v1", tags=["Funding Rates"])
 app.include_router(hedge.router, prefix="/api/v1", tags=["Africa Hedge"])
+app.include_router(referral.router, prefix="/api/v1", tags=["Referral"])

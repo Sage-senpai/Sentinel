@@ -1,6 +1,7 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  if (!API_BASE) throw new Error('API not configured');
   const res = await fetch(`${API_BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' },
     ...options,
@@ -160,6 +161,52 @@ export interface HedgeResult {
   daily_carry_local: number;
   recommendation: string;
 }
+
+// ── Referral ────────────────────────────────────────────────
+export interface ReferralInfo {
+  code: string;
+  wallet: string;
+  referral_count: number;
+  points: number;
+  created_at: string;
+}
+
+export interface ReferralStats {
+  code: string;
+  referral_count: number;
+  points: number;
+  tier_earned: string | null;
+  conversions: { new_wallet: string; points_awarded: number; converted_at: string }[];
+}
+
+export interface ConversionResult {
+  success: boolean;
+  error?: string;
+  points_awarded?: number;
+  total_points?: number;
+  tier_earned?: string | null;
+}
+
+export interface LeaderboardEntry {
+  wallet: string;
+  code: string;
+  referral_count: number;
+  points: number;
+}
+
+export const referral = {
+  getCode: (wallet: string) =>
+    request<ReferralInfo>(`/api/v1/referral/code?wallet=${wallet}`),
+  stats: (wallet: string) =>
+    request<ReferralStats>(`/api/v1/referral/stats?wallet=${wallet}`),
+  convert: (referralCode: string, newWallet: string) =>
+    request<ConversionResult>(
+      `/api/v1/referral/convert?referral_code=${referralCode}&new_wallet=${newWallet}`,
+      { method: 'POST' }
+    ),
+  leaderboard: (limit = 10) =>
+    request<LeaderboardEntry[]>(`/api/v1/referral/leaderboard?limit=${limit}`),
+};
 
 export const hedge = {
   rates: () => request<FxRate[]>('/api/v1/hedge/rates'),

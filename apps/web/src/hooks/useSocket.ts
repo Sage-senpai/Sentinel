@@ -5,18 +5,22 @@ import { io, Socket } from 'socket.io-client';
 
 type EventHandler = (data: unknown) => void;
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || '';
 
 export function useSocket() {
   const socketRef = useRef<Socket | null>(null);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
+    // Don't connect if no WS URL configured
+    if (!WS_URL) return;
+
     const socket = io(WS_URL, {
       transports: ['websocket'],
       reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: Infinity,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 30000,
+      reconnectionAttempts: 5,
       autoConnect: true,
     });
 

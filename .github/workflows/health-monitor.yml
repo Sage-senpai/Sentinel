@@ -1,14 +1,15 @@
 # ============================================================
 #  SENTINEL — Scheduled Health Monitor
-#  Runs every 15 minutes in production. Pages on failure.
+#  DISABLED until production backend is deployed.
+#  To re-enable: uncomment the schedule trigger below.
 # ============================================================
 
 name: Production Health Monitor
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'   # Every 15 minutes
-  workflow_dispatch:           # Allow manual trigger
+  # schedule:
+  #   - cron: '*/15 * * * *'   # Re-enable when api.sentinel.app is live
+  workflow_dispatch:             # Manual trigger only
 
 jobs:
   health-check:
@@ -17,29 +18,33 @@ jobs:
     steps:
       - name: API health endpoint
         run: |
+          API_URL="${{ vars.PROD_API_URL || 'https://api.sentinel.app' }}"
           STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
             --max-time 10 \
-            https://api.sentinel.app/health)
+            "$API_URL/health") || STATUS="000"
           [ "$STATUS" == "200" ] || (echo "API DOWN (HTTP $STATUS)" && exit 1)
 
       - name: WebSocket connectivity
         run: |
+          API_URL="${{ vars.PROD_API_URL || 'https://api.sentinel.app' }}"
           STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
             --max-time 10 \
-            https://api.sentinel.app/health/ws)
+            "$API_URL/health/ws") || STATUS="000"
           [ "$STATUS" == "200" ] || (echo "WebSocket health FAIL" && exit 1)
 
       - name: Pacifica API reachability
         run: |
+          API_URL="${{ vars.PROD_API_URL || 'https://api.sentinel.app' }}"
           STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
             --max-time 15 \
-            https://api.sentinel.app/health/pacifica)
+            "$API_URL/health/pacifica") || STATUS="000"
           [ "$STATUS" == "200" ] || (echo "Pacifica upstream FAIL" && exit 1)
 
       - name: All 6 agents running
         id: agent-check
         run: |
-          RESPONSE=$(curl -sf --max-time 10 https://api.sentinel.app/health/agents)
+          API_URL="${{ vars.PROD_API_URL || 'https://api.sentinel.app' }}"
+          RESPONSE=$(curl -sf --max-time 10 "$API_URL/health/agents") || exit 1
           ALL_OK=$(echo "$RESPONSE" | python3 -c "
           import sys, json
           data = json.load(sys.stdin)
@@ -57,16 +62,18 @@ jobs:
 
       - name: Redis connectivity
         run: |
+          API_URL="${{ vars.PROD_API_URL || 'https://api.sentinel.app' }}"
           STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
             --max-time 10 \
-            https://api.sentinel.app/health/redis)
+            "$API_URL/health/redis") || STATUS="000"
           [ "$STATUS" == "200" ] || (echo "Redis DOWN" && exit 1)
 
       - name: Frontend reachable
         run: |
+          FRONTEND_URL="${{ vars.PROD_FRONTEND_URL || 'https://sentinel.app' }}"
           STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
             --max-time 10 \
-            https://sentinel.app)
+            "$FRONTEND_URL") || STATUS="000"
           [ "$STATUS" == "200" ] || (echo "Frontend DOWN (HTTP $STATUS)" && exit 1)
 
       - name: Alert on any failure
@@ -75,18 +82,15 @@ jobs:
         with:
           payload: |
             {
-              "text": "🚨 SENTINEL PRODUCTION ALERT\nOne or more health checks FAILED.\nFailing agents: ${{ steps.agent-check.outputs.FAILING_AGENTS || 'N/A' }}\nInvestigate: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "SENTINEL PRODUCTION ALERT\nOne or more health checks FAILED.\nFailing agents: ${{ steps.agent-check.outputs.FAILING_AGENTS || 'N/A' }}\nInvestigate: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-# ============================================================
-#  Scheduled: Weekly Lighthouse audit + dependency updates
-# ============================================================
   weekly-audit:
     name: Weekly Lighthouse + Dep Check
     runs-on: ubuntu-latest
-    if: github.event.schedule == '0 9 * * 1'   # Mondays 9AM UTC
+    if: github.event.schedule == '0 9 * * 1'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -95,18 +99,7 @@ jobs:
         uses: treosh/lighthouse-ci-action@v11
         with:
           urls: |
-            https://sentinel.app
-            https://sentinel.app/dashboard
-            https://sentinel.app/whale-tracker
+            ${{ vars.PROD_FRONTEND_URL || 'https://sentinel.app' }}
+            ${{ vars.PROD_FRONTEND_URL || 'https://sentinel.app' }}/dashboard
           budgetPath: .github/lighthouse-budget.json
           uploadArtifacts: true
-
-      - name: Post weekly Lighthouse report
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload: |
-            {
-              "text": "📊 SENTINEL Weekly Lighthouse Report\nCheck GitHub Actions for full scores.\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

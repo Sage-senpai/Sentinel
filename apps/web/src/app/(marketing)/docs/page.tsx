@@ -29,6 +29,10 @@ const API_ENDPOINTS = [
   { method: 'PUT', path: '/api/v1/guard/config', auth: true, desc: 'Update guard config' },
   { method: 'GET', path: '/api/v1/hedge/rates', auth: false, desc: 'NGN/KES/GHS FX rates' },
   { method: 'POST', path: '/api/v1/hedge/calculate', auth: false, desc: 'Hedge recommendation' },
+  { method: 'GET', path: '/api/v1/referral/code', auth: false, desc: 'Get/create referral code for wallet' },
+  { method: 'GET', path: '/api/v1/referral/stats', auth: false, desc: 'Referral stats and conversions' },
+  { method: 'POST', path: '/api/v1/referral/convert', auth: false, desc: 'Track referral conversion' },
+  { method: 'GET', path: '/api/v1/referral/leaderboard', auth: false, desc: 'Top referrers by points' },
 ];
 
 const WS_CHANNELS = [

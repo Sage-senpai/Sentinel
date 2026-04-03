@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+const API_CONFIGURED = !!process.env.NEXT_PUBLIC_API_URL;
+
 interface UseApiResult<T> {
   data: T | null;
   loading: boolean;
@@ -17,17 +19,23 @@ export function useApi<T>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const fetcherRef = useRef(fetcher);
+  const failCountRef = useRef(0);
   fetcherRef.current = fetcher;
 
-  const enabled = options?.enabled ?? true;
+  const enabled = (options?.enabled ?? true) && API_CONFIGURED;
 
   const doFetch = useCallback(async () => {
-    if (!enabled) return;
+    if (!enabled) { setLoading(false); return; }
+    // Stop polling after 3 consecutive failures
+    if (failCountRef.current >= 3) return;
+
     try {
       const result = await fetcherRef.current();
       setData(result);
       setError(null);
+      failCountRef.current = 0;
     } catch (e) {
+      failCountRef.current++;
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setLoading(false);
@@ -35,9 +43,11 @@ export function useApi<T>(
   }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) { setLoading(false); return; }
+
     doFetch();
 
-    if (options?.pollInterval && enabled) {
+    if (options?.pollInterval) {
       const id = setInterval(doFetch, options.pollInterval);
       return () => clearInterval(id);
     }
