@@ -28,6 +28,8 @@ async def pacifica_health():
 async def redis_health():
     try:
         r = await get_redis()
+        if r is None:
+            return {"connected": False, "message": "Redis not configured"}
         pong = await r.ping()
         return {"connected": pong}
     except Exception as e:

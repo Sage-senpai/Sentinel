@@ -13,19 +13,15 @@ from app.routers import health, markets, alerts, positions, guard, whale, fundin
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup / shutdown lifecycle events."""
-    try:
-        r = await get_redis()
-        await r.ping()
+    r = await get_redis()
+    if r:
         print("[SENTINEL] Redis connected")
-    except Exception as e:
-        print(f"[SENTINEL] Redis not available: {e} — starting without cache")
+    else:
+        print("[SENTINEL] Redis not available — starting without cache")
 
     yield
 
-    try:
-        await close_redis()
-    except Exception:
-        pass
+    await close_redis()
     print("[SENTINEL] Shutdown complete")
 
 
