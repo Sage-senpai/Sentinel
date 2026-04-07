@@ -17,6 +17,13 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {},
+    // Testnet — use this for hackathon demo
+    arbitrumSepolia: {
+      url: 'https://sepolia-rollup.arbitrum.io/rpc',
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      chainId: 421614,
+    },
+    // Mainnet — use after hackathon
     arbitrum: {
       url: ARBITRUM_RPC_URL,
       accounts: [DEPLOYER_PRIVATE_KEY],
@@ -26,6 +33,7 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       arbitrumOne: ARBISCAN_API_KEY,
+      arbitrumSepolia: ARBISCAN_API_KEY,
     },
   },
   gasReporter: {

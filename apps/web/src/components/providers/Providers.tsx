@@ -2,12 +2,17 @@
 
 import { ReactNode } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
+import { PrivyMountedContext } from '@/hooks/useAuth';
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
 export function Providers({ children }: { children: ReactNode }) {
   if (!PRIVY_APP_ID) {
-    return <>{children}</>;
+    return (
+      <PrivyMountedContext.Provider value={false}>
+        {children}
+      </PrivyMountedContext.Provider>
+    );
   }
 
   return (
@@ -27,7 +32,9 @@ export function Providers({ children }: { children: ReactNode }) {
         },
       }}
     >
-      {children}
+      <PrivyMountedContext.Provider value={true}>
+        {children}
+      </PrivyMountedContext.Provider>
     </PrivyProvider>
   );
 }
