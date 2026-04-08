@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 import { useApi } from '@/hooks/useApi';
+import { useNotify } from '@/components/providers/NotificationProvider';
 import * as api from '@/services/api';
 import styles from './SentinelGuard.module.scss';
 
@@ -34,6 +35,8 @@ export function SentinelGuard() {
   const [guardConfig, setGuardConfig] = useState<api.GuardConfig | null>(null);
 
   const { subscribe } = useSocket();
+  const { push: notify } = useNotify();
+  const lowHealthNotifiedRef = useRef<Set<string>>(new Set());
 
   // Fetch positions
   const { data: apiPositions } = useApi(() => api.positions.open(), { pollInterval: 10000 });
@@ -87,23 +90,39 @@ export function SentinelGuard() {
             : p
         )
       );
+
+      // Notify on critically low health
+      if (event.health_score < 30 && !lowHealthNotifiedRef.current.has(event.symbol)) {
+        lowHealthNotifiedRef.current.add(event.symbol);
+        notify('guard', `Low Health — ${event.symbol}`, `Health score dropped to ${event.health_score}. Guard is monitoring.`, 'guard');
+      }
+      if (event.health_score >= 50) {
+        lowHealthNotifiedRef.current.delete(event.symbol);
+      }
     });
     return unsub;
-  }, [subscribe]);
+  }, [subscribe, notify]);
 
   const toggleGuard = useCallback(async (symbol: string) => {
+    const enabling = !positions.find((p) => p.symbol === symbol)?.guardEnabled;
     setPositions((prev) =>
-      prev.map((p) => p.symbol === symbol ? { ...p, guardEnabled: !p.guardEnabled } : p)
+      prev.map((p) => p.symbol === symbol ? { ...p, guardEnabled: enabling } : p)
     );
     try {
-      await api.guard.update({ guard_enabled: !guardConfig?.guard_enabled, position_symbol: symbol });
-    } catch {
-      // Revert on failure
-      setPositions((prev) =>
-        prev.map((p) => p.symbol === symbol ? { ...p, guardEnabled: !p.guardEnabled } : p)
+      await api.guard.update({ guard_enabled: enabling, position_symbol: symbol });
+      notify(
+        enabling ? 'guard' : 'info',
+        enabling ? `Guard Activated — ${symbol}` : `Guard Disabled — ${symbol}`,
+        enabling ? 'Position is now protected' : 'Automated protection turned off',
+        enabling ? 'guard' : 'disconnect',
       );
+    } catch {
+      setPositions((prev) =>
+        prev.map((p) => p.symbol === symbol ? { ...p, guardEnabled: !enabling } : p)
+      );
+      notify('alert', 'Guard Toggle Failed', `Could not update guard for ${symbol}`, 'alert');
     }
-  }, [guardConfig]);
+  }, [positions, notify]);
 
   const getHealthColor = (score: number): string => {
     if (score >= 70) return 'var(--color-teal)';

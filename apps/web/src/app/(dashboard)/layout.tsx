@@ -1,5 +1,6 @@
 import { Sidebar } from '@/components/layout/Sidebar/Sidebar';
 import { Header } from '@/components/layout/Header/Header';
+import { NotificationProvider } from '@/components/providers/NotificationProvider';
 
 export default function DashboardLayout({
   children,
@@ -7,12 +8,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="app-layout">
-      <Sidebar />
-      <div className="app-main">
-        <Header />
-        <main className="app-content">{children}</main>
+    <NotificationProvider>
+      <div className="app-layout">
+        <Sidebar />
+        <div className="app-main">
+          <Header />
+          <main className="app-content">{children}</main>
+        </div>
       </div>
-    </div>
+    </NotificationProvider>
   );
 }

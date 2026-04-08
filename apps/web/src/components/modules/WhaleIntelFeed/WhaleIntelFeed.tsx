@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 import { useApi } from '@/hooks/useApi';
+import { useNotify } from '@/components/providers/NotificationProvider';
 import * as api from '@/services/api';
 import styles from './WhaleIntelFeed.module.scss';
 
@@ -25,6 +26,8 @@ export function WhaleIntelFeed() {
   const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
 
   const { subscribe } = useSocket();
+  const { push: notify } = useNotify();
+  const prevConvergenceRef = useRef(false);
 
   // Initial load from API
   const { data: apiEvents } = useApi(() => api.whale.events(), { pollInterval: 30000 });
@@ -49,9 +52,15 @@ export function WhaleIntelFeed() {
 
   useEffect(() => {
     if (convergenceData && convergenceData.length > 0) {
+      if (!prevConvergenceRef.current) {
+        notify('whale', 'Smart Money Convergence', `${convergenceData[0].whale_count}+ whales aligned on ${convergenceData[0].market}`, 'whale');
+      }
       setConvergenceAlert(true);
+      prevConvergenceRef.current = true;
+    } else {
+      prevConvergenceRef.current = false;
     }
-  }, [convergenceData]);
+  }, [convergenceData, notify]);
 
   // Real-time whale events via WebSocket
   useEffect(() => {
@@ -68,9 +77,14 @@ export function WhaleIntelFeed() {
         createdAt: event.created_at,
       };
       setEvents((prev) => [uiEvent, ...prev].slice(0, 50));
+
+      // Notify on large whale events (>$500K)
+      if (uiEvent.sizeUsd > 500_000) {
+        notify('whale', `Whale ${uiEvent.actionType}`, `${formatUsd(uiEvent.sizeUsd)} on ${uiEvent.market}`, 'whale');
+      }
     });
     return unsub;
-  }, [subscribe]);
+  }, [subscribe, notify]);
 
   const toggleWatchlist = (address: string) => {
     setWatchlist((prev) => {

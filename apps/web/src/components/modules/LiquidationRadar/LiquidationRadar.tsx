@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 import { useApi } from '@/hooks/useApi';
+import { useNotify } from '@/components/providers/NotificationProvider';
 import * as api from '@/services/api';
 import styles from './LiquidationRadar.module.scss';
 
@@ -28,6 +29,8 @@ export function LiquidationRadar() {
   const liqCountRef = useRef(0);
 
   const { connected, subscribe } = useSocket();
+  const { push: notify } = useNotify();
+  const prevSeverityRef = useRef<string | null>(null);
 
   const { data: cascadeData } = useApi(
     () => api.alerts.cascade(),
@@ -37,6 +40,20 @@ export function LiquidationRadar() {
   const cascade = cascadeData?.find(
     (c) => c.market === selectedMarket
   ) ?? null;
+
+  // Notify on severity change
+  useEffect(() => {
+    if (!cascade) return;
+    const prev = prevSeverityRef.current;
+    prevSeverityRef.current = cascade.severity;
+    if (prev === cascade.severity) return;
+
+    if (cascade.severity === 'CASCADE_IMMINENT') {
+      notify('cascade', `CASCADE IMMINENT — ${cascade.market}`, `${cascade.probability}% probability. Take protective action.`, 'cascade');
+    } else if (cascade.severity === 'ALERT') {
+      notify('alert', `Alert — ${cascade.market}`, `Cascade probability rising to ${cascade.probability}%`, 'alert');
+    }
+  }, [cascade, notify]);
 
   // Subscribe to real-time liquidation events
   useEffect(() => {

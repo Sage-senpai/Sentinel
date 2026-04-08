@@ -6,6 +6,7 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy:local": "hardhat run scripts/deploy-alert-registry.ts --network localhost",
+    "deploy:testnet": "hardhat run scripts/deploy-alert-registry.ts --network arbitrumSepolia",
     "deploy:arbitrum": "hardhat run scripts/deploy-alert-registry.ts --network arbitrum",
     "verify": "hardhat verify --network arbitrum"
   },

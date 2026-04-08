@@ -1,13 +1,34 @@
 'use client';
 
+import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSocket } from '@/hooks/useSocket';
+import { useNotify } from '@/components/providers/NotificationProvider';
+import { playSound } from '@/services/sounds';
 import { IconWallet, IconDisconnect, IconAgents } from '@/components/icons/Icons';
 import styles from './Header.module.scss';
 
 export function Header() {
   const { login, logout, authenticated, walletAddress, ready } = useAuth();
   const { connected } = useSocket();
+  const { push: notify } = useNotify();
+  const prevAuthRef = useRef(authenticated);
+
+  // Notify on auth state changes
+  useEffect(() => {
+    if (prevAuthRef.current === authenticated) return;
+    prevAuthRef.current = authenticated;
+
+    if (authenticated) {
+      notify('success', 'Wallet Connected', walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connected successfully');
+      playSound('connect');
+    } else {
+      playSound('disconnect');
+    }
+  }, [authenticated, walletAddress, notify]);
+
+  const handleLogin = useCallback(() => { login(); }, [login]);
+  const handleLogout = useCallback(() => { logout(); }, [logout]);
 
   return (
     <header className="app-header">
@@ -34,13 +55,13 @@ export function Header() {
                 ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
                 : 'Connected'}
             </span>
-            <button className={styles.authButton} onClick={logout} type="button">
+            <button className={styles.authButton} onClick={handleLogout} type="button">
               <IconDisconnect size={14} />
               Disconnect
             </button>
           </div>
         ) : (
-          <button className={styles.authButton} onClick={login} type="button">
+          <button className={styles.authButton} onClick={handleLogin} type="button">
             <IconWallet size={14} />
             Connect Wallet
           </button>

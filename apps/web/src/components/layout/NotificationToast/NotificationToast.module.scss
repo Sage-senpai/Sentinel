@@ -1,0 +1,148 @@
+@use '../../../styles/mixins' as *;
+
+.container {
+  position: fixed;
+  top: calc(var(--header-height, 56px) + 12px);
+  right: 16px;
+  z-index: var(--z-alert);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 380px;
+  width: 100%;
+  pointer-events: none;
+
+  @include mobile { right: 8px; left: 8px; max-width: none; }
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  cursor: default;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: toast-enter 0.35s var(--ease-out-expo);
+  }
+}
+
+@keyframes toast-enter {
+  0% { opacity: 0; transform: translateX(40px) scale(0.95); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+// ── Type variants ───────────────────────────────────────────
+.toast_cascade {
+  border-color: rgba(255, 59, 92, 0.4);
+  box-shadow: 0 0 20px rgba(255, 59, 92, 0.1), 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.toast_whale {
+  border-color: rgba(0, 102, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.toast_guard {
+  border-color: rgba(0, 212, 170, 0.3);
+  box-shadow: 0 0 20px rgba(0, 212, 170, 0.08), 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.toast_alert {
+  border-color: rgba(255, 184, 0, 0.3);
+}
+
+.toast_success {
+  border-color: rgba(0, 200, 83, 0.3);
+}
+
+.toast_info {
+  border-color: var(--color-border-hover);
+}
+
+// ── Icon column ─────────────────────────────────────────────
+.iconCol {
+  flex-shrink: 0;
+  @include flex-center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: var(--text-sm);
+}
+
+.toast_cascade .iconCol { background: rgba(255, 59, 92, 0.12); color: var(--color-red); }
+.toast_whale .iconCol   { background: rgba(0, 102, 255, 0.1); color: var(--color-blue); }
+.toast_guard .iconCol   { background: rgba(0, 212, 170, 0.1); color: var(--color-teal); }
+.toast_alert .iconCol   { background: rgba(255, 184, 0, 0.1); color: var(--color-gold); }
+.toast_success .iconCol { background: rgba(0, 200, 83, 0.1); color: var(--color-green); }
+.toast_info .iconCol    { background: rgba(255, 255, 255, 0.05); color: var(--color-text-secondary); }
+
+.icon {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--text-xs);
+}
+
+// ── Body ────────────────────────────────────────────────────
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.header {
+  @include flex-between;
+  margin-bottom: 2px;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-text-tertiary);
+}
+
+.title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 1px;
+  @include truncate;
+}
+
+.message {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  @include truncate;
+}
+
+// ── Close ───────────────────────────────────────────────────
+.close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.15s;
+  align-self: flex-start;
+
+  &:hover { color: var(--color-text-primary); }
+}
