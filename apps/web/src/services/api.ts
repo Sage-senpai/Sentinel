@@ -55,8 +55,14 @@ export interface Alert {
 }
 
 export const alerts = {
-  recent: () => request<Alert[]>('/api/v1/alerts'),
-  cascade: () => request<CascadePrediction[]>('/api/v1/alerts/cascade'),
+  recent: async () => {
+    const res = await request<Alert[] | { alerts: Alert[] }>('/api/v1/alerts');
+    return Array.isArray(res) ? res : (res as { alerts: Alert[] }).alerts ?? [];
+  },
+  cascade: async () => {
+    const res = await request<CascadePrediction[] | { predictions: CascadePrediction[] }>('/api/v1/alerts/cascade');
+    return Array.isArray(res) ? res : (res as { predictions: CascadePrediction[] }).predictions ?? [];
+  },
 };
 
 // ── Positions ───────────────────────────────────────────────
@@ -73,8 +79,14 @@ export interface Position {
 }
 
 export const positions = {
-  open: () => request<Position[]>('/api/v1/positions'),
-  history: () => request<Position[]>('/api/v1/positions/history'),
+  open: async () => {
+    const res = await request<Position[] | { positions: Position[] }>('/api/v1/positions');
+    return Array.isArray(res) ? res : (res as { positions: Position[] }).positions ?? [];
+  },
+  history: async () => {
+    const res = await request<Position[] | { positions: Position[] }>('/api/v1/positions/history');
+    return Array.isArray(res) ? res : (res as { positions: Position[] }).positions ?? [];
+  },
 };
 
 // ── Guard ───────────────────────────────────────────────────
@@ -88,7 +100,11 @@ export interface GuardConfig {
 }
 
 export const guard = {
-  config: () => request<GuardConfig>('/api/v1/guard/config'),
+  config: async () => {
+    const res = await request<GuardConfig | { configs: GuardConfig[] }>('/api/v1/guard/config');
+    if ('configs' in (res as object)) return (res as { configs: GuardConfig[] }).configs?.[0] ?? null;
+    return res as GuardConfig;
+  },
   update: (config: Partial<GuardConfig>) =>
     request<GuardConfig>('/api/v1/guard/config', {
       method: 'PUT',
@@ -118,9 +134,18 @@ export interface Convergence {
 }
 
 export const whale = {
-  events: () => request<WhaleEvent[]>('/api/v1/whale/events'),
-  convergence: () => request<Convergence[]>('/api/v1/whale/convergence'),
-  watchlist: () => request<string[]>('/api/v1/whale/watchlist'),
+  events: async () => {
+    const res = await request<WhaleEvent[] | { events: WhaleEvent[] }>('/api/v1/whale/events');
+    return Array.isArray(res) ? res : (res as { events: WhaleEvent[] }).events ?? [];
+  },
+  convergence: async () => {
+    const res = await request<Convergence[] | { alerts: Convergence[] }>('/api/v1/whale/convergence');
+    return Array.isArray(res) ? res : (res as { alerts: Convergence[] }).alerts ?? [];
+  },
+  watchlist: async () => {
+    const res = await request<string[] | { wallets: string[] }>('/api/v1/whale/watchlist');
+    return Array.isArray(res) ? res : (res as { wallets: string[] }).wallets ?? [];
+  },
 };
 
 // ── Funding ─────────────────────────────────────────────────
@@ -140,7 +165,10 @@ export interface FundingForecast {
 }
 
 export const funding = {
-  rates: () => request<FundingRate[]>('/api/v1/funding/rates'),
+  rates: async () => {
+    const res = await request<FundingRate[] | { rates: FundingRate[] }>('/api/v1/funding/rates');
+    return Array.isArray(res) ? res : (res as { rates: FundingRate[] }).rates ?? [];
+  },
   forecast: (symbol: string) => request<FundingForecast>(`/api/v1/funding/forecast/${symbol}`),
   history: (symbol: string, days = 30) =>
     request<{ timestamp: string; rate: number }[]>(`/api/v1/funding/history/${symbol}?days=${days}`),
