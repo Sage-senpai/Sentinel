@@ -122,6 +122,10 @@ body {
   @include flex-between;
   border-bottom: 1px solid var(--color-border);
   padding: 0 var(--space-6);
+
+  @include tablet {
+    padding-left: 56px;
+  }
 }
 
 .app-content {

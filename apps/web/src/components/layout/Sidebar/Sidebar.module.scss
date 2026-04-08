@@ -1,5 +1,64 @@
 @use '../../../styles/mixins' as *;
 
+// ── Mobile Hamburger ────────────────────────────────────────
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 250;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: rgba(5, 5, 5, 0.85);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  @include flex-center;
+
+  @include tablet { display: flex; }
+}
+
+.hamburgerLine {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--color-text-primary);
+  border-radius: 1px;
+  position: relative;
+  transition: all 0.25s ease;
+
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 18px;
+    height: 2px;
+    background: var(--color-text-primary);
+    border-radius: 1px;
+    transition: all 0.25s ease;
+  }
+  &::before { top: -6px; }
+  &::after { top: 6px; }
+}
+
+.hamburgerOpen {
+  background: transparent;
+  &::before { top: 0; transform: rotate(45deg); }
+  &::after { top: 0; transform: rotate(-45deg); }
+}
+
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+
+  @include tablet { display: block; }
+}
+
 .brand {
   @include flex-center;
   gap: var(--space-3);

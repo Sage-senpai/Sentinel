@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -30,35 +31,58 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: 
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
-    <aside className="app-sidebar">
-      <div className={styles.brand}>
-        <SentinelLogo size={36} className={styles.logo} />
-        <span className={styles.brandName}>SENTINEL</span>
-      </div>
+    <>
+      {/* Mobile hamburger */}
+      <button
+        type="button"
+        className={styles.hamburger}
+        onClick={() => setOpen(!open)}
+        aria-label="Toggle navigation"
+      >
+        <span className={`${styles.hamburgerLine} ${open ? styles.hamburgerOpen : ''}`} />
+      </button>
 
-      <nav className={styles.nav}>
-        {NAV_ITEMS.map((item) => {
-          const Icon = ICON_MAP[item.icon];
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${pathname === item.href ? styles.active : ''}`}
-            >
-              <span className={styles.navIcon}>
-                <Icon size={20} />
-              </span>
-              <span className={styles.navLabel}>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      {/* Overlay */}
+      {open && (
+        <div
+          className={styles.overlay}
+          onClick={() => setOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
-      <div className={styles.footer}>
-        <span className={styles.tagline}>See the Cascade. Stop the Wipeout.</span>
-      </div>
-    </aside>
+      <aside className={`app-sidebar ${open ? 'open' : ''}`}>
+        <div className={styles.brand}>
+          <SentinelLogo size={36} className={styles.logo} />
+          <span className={styles.brandName}>SENTINEL</span>
+        </div>
+
+        <nav className={styles.nav}>
+          {NAV_ITEMS.map((item) => {
+            const Icon = ICON_MAP[item.icon];
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`${styles.navItem} ${pathname === item.href ? styles.active : ''}`}
+                onClick={() => setOpen(false)}
+              >
+                <span className={styles.navIcon}>
+                  <Icon size={20} />
+                </span>
+                <span className={styles.navLabel}>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className={styles.footer}>
+          <span className={styles.tagline}>See the Cascade. Stop the Wipeout.</span>
+        </div>
+      </aside>
+    </>
   );
 }
