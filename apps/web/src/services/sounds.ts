@@ -37,14 +37,19 @@ const STORAGE_KEY = 'sentinel-sound-prefs';
 let audioCtx: AudioContext | null = null;
 let masterMuted = false;
 
-function getCtx(): AudioContext {
-  if (!audioCtx) {
-    audioCtx = new AudioContext();
+function getCtx(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    if (!audioCtx) {
+      audioCtx = new AudioContext();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+    return audioCtx;
+  } catch {
+    return null;
   }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-  return audioCtx;
 }
 
 function getPrefs(): SoundPreferences {
@@ -67,6 +72,7 @@ function savePrefs(prefs: Partial<SoundPreferences>) {
 
 function playCascade(vol: number) {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   const gain = ctx.createGain();
   gain.connect(ctx.destination);
@@ -90,6 +96,7 @@ function playCascade(vol: number) {
 
 function playWhale(vol: number) {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   // Deep sonar ping
   const osc = ctx.createOscillator();
@@ -120,6 +127,7 @@ function playWhale(vol: number) {
 
 function playGuard(vol: number) {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   // Rising shield tone
   const osc = ctx.createOscillator();
@@ -137,6 +145,7 @@ function playGuard(vol: number) {
 
 function playAlert(vol: number) {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   // Double beep
   [0, 0.2].forEach((delay) => {
@@ -155,6 +164,7 @@ function playAlert(vol: number) {
 
 function playSuccess(vol: number) {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   // Ascending arpeggio
   [523, 659, 784].forEach((freq, i) => {
@@ -173,6 +183,7 @@ function playSuccess(vol: number) {
 
 function playConnect(vol: number) {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   // Bright two-tone chord
   [440, 554, 659].forEach((freq) => {
@@ -191,6 +202,7 @@ function playConnect(vol: number) {
 
 function playDisconnect(vol: number) {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   // Falling tone
   const osc = ctx.createOscillator();
@@ -227,6 +239,7 @@ export function playSound(type: SoundType) {
   if (!config?.enabled) return;
 
   try {
+    if (!getCtx()) return;
     SOUND_MAP[type](config.volume);
   } catch {
     // AudioContext may not be available

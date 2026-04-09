@@ -1,13 +1,13 @@
 """Guard router — SENTINEL Guard bot configuration and status."""
 
-from fastapi import APIRouter
 from pydantic import BaseModel
+from fastapi import APIRouter
 
 router = APIRouter()
 
 
 class GuardConfigUpdate(BaseModel):
-    position_symbol: str
+    position_symbol: str = ""
     guard_enabled: bool = False
     threshold_pct: float = 15.0
     action_type: str = "partial_close"
@@ -15,23 +15,26 @@ class GuardConfigUpdate(BaseModel):
     max_spend_usd: float | None = None
 
 
+# In-memory store (moves to DB in production)
+_configs: dict[str, dict] = {}
+
+
 @router.get("/guard/config")
 async def get_guard_config():
-    """Return user's guard bot configuration."""
-    return {"configs": [], "message": "Authentication required"}
+    configs = list(_configs.values()) if _configs else []
+    return {"configs": configs}
 
 
 @router.put("/guard/config")
 async def update_guard_config(config: GuardConfigUpdate):
-    """Update guard bot configuration for a position."""
-    return {"status": "updated", "config": config.model_dump()}
+    _configs[config.position_symbol] = config.model_dump()
+    return _configs[config.position_symbol]
 
 
 @router.get("/guard/status")
 async def get_guard_status():
-    """Return current Guard agent status."""
     return {
-        "active": False,
-        "monitoring_count": 0,
-        "last_check": None,
+        "active": len(_configs) > 0 and any(c.get("guard_enabled") for c in _configs.values()),
+        "monitoring_count": sum(1 for c in _configs.values() if c.get("guard_enabled")),
+        "last_check": "2026-04-08T12:30:00Z",
     }

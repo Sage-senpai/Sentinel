@@ -237,7 +237,17 @@ export const referral = {
 };
 
 export const hedge = {
-  rates: () => request<FxRate[]>('/api/v1/hedge/rates'),
+  rates: async (): Promise<FxRate[]> => {
+    const res = await request<FxRate[] | { rates: Record<string, { rate: number; change_24h: number }> }>('/api/v1/hedge/rates');
+    if (Array.isArray(res)) return res;
+    const ratesObj = (res as { rates: Record<string, { rate: number; change_24h: number }> }).rates;
+    if (!ratesObj || typeof ratesObj !== 'object') return [];
+    return Object.entries(ratesObj).map(([currency, data]) => ({
+      currency,
+      rate_to_usd: data?.rate ?? 0,
+      change_24h: data?.change_24h ?? 0,
+    }));
+  },
   calculate: (params: {
     currency: string;
     portfolio_value_usd: number;
