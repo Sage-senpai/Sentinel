@@ -42,8 +42,11 @@
 
 .currencyGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-2);
+  margin-bottom: var(--space-4);
+
+  @include desktop { grid-template-columns: repeat(4, 1fr); }
 }
 
 .currencyCard {
@@ -163,10 +166,26 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  position: relative;
   h3 {
     font-size: var(--text-md);
     @include gradient-text;
   }
+}
+
+.sourceBadge {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+  color: var(--color-teal);
+  background: rgba(0, 212, 170, 0.08);
+  border: 1px solid rgba(0, 212, 170, 0.15);
 }
 
 .recommendation {

@@ -153,8 +153,10 @@ export interface FundingRate {
   market: string;
   rate_8h: number;
   annualized_apr: number;
-  next_funding_time: string;
+  next_funding_time?: string;
+  next_funding_rate?: number;
   mark_price: number;
+  max_leverage?: number;
 }
 
 export interface FundingForecast {

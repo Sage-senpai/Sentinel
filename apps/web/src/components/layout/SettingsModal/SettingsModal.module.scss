@@ -1,0 +1,174 @@
+@use '../../../styles/mixins' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  @include flex-center;
+  @media (prefers-reduced-motion: no-preference) { animation: fade-in 0.2s ease; }
+}
+
+.modal {
+  width: 90%;
+  max-width: 520px;
+  max-height: 85vh;
+  @include glass-card;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  @media (prefers-reduced-motion: no-preference) { animation: fade-in-up 0.25s var(--ease-out-expo); }
+}
+
+.header {
+  @include flex-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  h2 { font-size: var(--text-lg); }
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--text-xl);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  &:hover { background: rgba(255, 255, 255, 0.05); color: var(--color-text-primary); }
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 var(--space-4);
+}
+
+.tab {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  &:hover { color: var(--color-text-primary); }
+}
+
+.tabActive {
+  color: var(--color-blue);
+  border-bottom-color: var(--color-blue);
+}
+
+.content {
+  padding: var(--space-4);
+  overflow-y: auto;
+  @include custom-scrollbar;
+  flex: 1;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row {
+  @include flex-between;
+  padding: var(--space-3) var(--space-3);
+  border-radius: 10px;
+  cursor: default;
+  transition: background 0.15s;
+  gap: var(--space-3);
+  &:hover { background: rgba(255, 255, 255, 0.02); }
+}
+
+.rowLabel {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.rowDesc {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+  word-break: break-all;
+}
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badgeLive {
+  color: var(--color-teal);
+  background: rgba(0, 212, 170, 0.08);
+  border-color: rgba(0, 212, 170, 0.15);
+}
+
+.toggle {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.toggleOn {
+  color: var(--color-teal);
+  background: rgba(0, 212, 170, 0.08);
+  border-color: rgba(0, 212, 170, 0.2);
+}
+
+.toggleOff {
+  color: var(--color-text-tertiary);
+  background: transparent;
+}
+
+.soundControls {
+  @include flex-center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.volumeSlider {
+  width: 80px;
+  height: 4px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-blue);
+    cursor: pointer;
+    border: 2px solid var(--color-base);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+  }
+}

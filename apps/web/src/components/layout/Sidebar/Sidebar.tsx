@@ -17,7 +17,7 @@ const NAV_ITEMS = [
   { href: '/dashboard', label: 'Liquidation Radar', icon: 'radar' },
   { href: '/whale-intelligence', label: 'Whale Intelligence', icon: 'whale' },
   { href: '/guard', label: 'SENTINEL Guard', icon: 'shield' },
-  { href: '/africa-hedge', label: 'Africa FX Hedge', icon: 'hedge' },
+  { href: '/africa-hedge', label: 'FX Hedge', icon: 'hedge' },
   { href: '/funding-rates', label: 'Funding Rates', icon: 'chart' },
 ] as const;
 

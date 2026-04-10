@@ -37,17 +37,22 @@ export function FundingRateDashboard() {
 
   useEffect(() => {
     if (apiRates) {
-      setRates(apiRates.map((r) => {
+      setRates(apiRates.map((r: api.FundingRate & { next_funding_rate?: number }) => {
         const apr = r.annualized_apr;
+        const nextRate = (r as { next_funding_rate?: number }).next_funding_rate;
         let trend: 'rising' | 'falling' | 'stable' = 'stable';
         if (apr > 5) trend = 'rising';
         else if (apr < -5) trend = 'falling';
+
+        const predictions = forecast?.symbol === r.market
+          ? forecast.predictions
+          : nextRate != null ? [nextRate] : [];
 
         return {
           market: r.market,
           rate8h: r.rate_8h,
           annualizedApr: apr,
-          predicted: forecast?.symbol === r.market ? forecast.predictions : [],
+          predicted: predictions,
           trend,
         };
       }));

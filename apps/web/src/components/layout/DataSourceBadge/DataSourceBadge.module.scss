@@ -1,0 +1,41 @@
+@use '../../../styles/mixins' as *;
+
+.badge {
+  @include flex-center;
+  display: inline-flex;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.live {
+  color: var(--color-teal);
+  background: rgba(0, 212, 170, 0.08);
+  border: 1px solid rgba(0, 212, 170, 0.15);
+  .dot { background: var(--color-teal); }
+}
+
+.demo {
+  color: var(--color-gold);
+  background: rgba(255, 184, 0, 0.08);
+  border: 1px solid rgba(255, 184, 0, 0.15);
+  .dot { background: var(--color-gold); }
+}
+
+.loading {
+  color: var(--color-text-tertiary);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  .dot { background: var(--color-text-tertiary); }
+}
