@@ -27,10 +27,36 @@ export interface MarketData {
   status: string;
 }
 
+export interface TradeData {
+  price: number;
+  size: number;
+  side: string;
+  type: string;
+  timestamp: number;
+}
+
+export interface OrderbookData {
+  symbol: string;
+  bids: { price: number; size: number }[];
+  asks: { price: number; size: number }[];
+  source: string;
+}
+
 export const markets = {
-  list: () => request<MarketData[]>('/api/v1/markets'),
+  list: async () => {
+    const res = await request<{ markets: MarketData[] } | MarketData[]>('/api/v1/markets');
+    return Array.isArray(res) ? res : (res as { markets: MarketData[] }).markets ?? [];
+  },
   orderbook: (symbol: string) =>
-    request<{ bids: number[][]; asks: number[][] }>(`/api/v1/markets/${symbol}/orderbook`),
+    request<OrderbookData>(`/api/v1/markets/${symbol}/orderbook`),
+  trades: async (symbol: string) => {
+    const res = await request<{ trades: TradeData[]; mark_price: number; source: string }>(`/api/v1/markets/${symbol}/trades`);
+    return res;
+  },
+  price: async (symbol: string) => {
+    const res = await request<{ symbol: string; price: number; source: string }>(`/api/v1/markets/${symbol}/price`);
+    return res;
+  },
 };
 
 // ── Alerts ──────────────────────────────────────────────────

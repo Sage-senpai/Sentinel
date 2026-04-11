@@ -32,6 +32,32 @@ export function LiquidationRadar() {
   const { push: notify } = useNotify();
   const prevSeverityRef = useRef<string | null>(null);
 
+  // Fetch live mark price from Pacifica trades
+  const marketSymbol = selectedMarket.replace('-PERP', '');
+  const { data: priceData } = useApi(
+    () => api.markets.price(marketSymbol),
+    { pollInterval: 5000 }
+  );
+
+  // Fetch live trades for heatmap density
+  const { data: tradeData } = useApi(
+    () => api.markets.trades(marketSymbol),
+    { pollInterval: 8000 }
+  );
+
+  useEffect(() => {
+    if (priceData?.price && priceData.price > 0) {
+      setMarkPrice(priceData.price);
+    }
+  }, [priceData]);
+
+  // Compute liquidation velocity from trade data
+  useEffect(() => {
+    if (tradeData?.trades) {
+      setLiqVelocity(tradeData.trades.length);
+    }
+  }, [tradeData]);
+
   const { data: cascadeData } = useApi(
     () => api.alerts.cascade(),
     { pollInterval: 10000 }
@@ -150,35 +176,69 @@ export function LiquidationRadar() {
 
           <div className={styles.heatmap} ref={heatmapRef}>
             <svg viewBox="0 0 800 300" className={styles.heatmapSvg} preserveAspectRatio="none">
-              {/* Simulated liquidation density heatmap */}
-              {Array.from({ length: 20 }, (_, row) =>
-                Array.from({ length: 40 }, (_, col) => {
-                  const risk = marketRisks.find((m) => m.symbol === selectedMarket);
-                  const baseIntensity = (risk?.riskScore ?? 30) / 100;
-                  const noise = Math.sin(col * 0.5 + row * 0.3) * 0.3 + Math.cos(col * 0.2 - row * 0.4) * 0.2;
-                  const intensity = Math.max(0, Math.min(1, baseIntensity * 0.6 + noise * 0.4 + Math.random() * 0.1));
-                  const r = Math.round(intensity > 0.6 ? 200 + intensity * 55 : intensity * 100);
-                  const g = Math.round(intensity > 0.5 ? (1 - intensity) * 180 : 100 + intensity * 150);
-                  const b = Math.round(intensity < 0.3 ? 150 + intensity * 100 : (1 - intensity) * 80);
-                  return (
-                    <rect
-                      key={`${row}-${col}`}
-                      x={col * 20}
-                      y={row * 15}
-                      width={20}
-                      height={15}
-                      fill={`rgb(${r},${g},${b})`}
-                      opacity={0.7 + intensity * 0.3}
-                    />
-                  );
-                })
-              )}
-              {/* Price level lines */}
-              {[0.25, 0.5, 0.75].map((y) => (
-                <line key={y} x1="0" y1={y * 300} x2="800" y2={y * 300} stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" strokeDasharray="4,4" />
-              ))}
-              <text x="10" y="20" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="var(--font-mono)">High Liq. Density</text>
-              <text x="10" y="290" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="var(--font-mono)">Low Liq. Density</text>
+              {(() => {
+                const trades = tradeData?.trades ?? [];
+                const currentPrice = markPrice ?? 0;
+                const risk = marketRisks.find((m) => m.symbol === selectedMarket);
+                const baseRisk = (risk?.riskScore ?? 30) / 100;
+
+                // Build price-level density from real trade data
+                const priceRange = currentPrice * 0.03; // +/- 3% range
+                const priceLow = currentPrice - priceRange;
+                const priceHigh = currentPrice + priceRange;
+
+                // Bucket trades into grid cells
+                const ROWS = 20;
+                const COLS = 40;
+                const grid: number[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+
+                trades.forEach((t) => {
+                  const yNorm = priceHigh > priceLow ? (t.price - priceLow) / (priceHigh - priceLow) : 0.5;
+                  const row = Math.floor(Math.max(0, Math.min(ROWS - 1, (1 - yNorm) * ROWS)));
+                  const col = Math.floor(Math.random() * COLS); // spread across time axis
+                  grid[row][col] += t.size;
+                });
+
+                // Normalize
+                const maxVal = Math.max(0.001, ...grid.flat());
+
+                return (
+                  <>
+                    {grid.map((row, ri) =>
+                      row.map((val, ci) => {
+                        const norm = val / maxVal;
+                        const intensity = Math.max(0, Math.min(1, norm * 0.7 + baseRisk * 0.3 + Math.sin(ci * 0.3 + ri * 0.2) * 0.08));
+                        const r = Math.round(intensity > 0.5 ? 180 + intensity * 75 : intensity * 60);
+                        const g = Math.round(intensity > 0.4 ? (1 - intensity) * 200 : 80 + intensity * 170);
+                        const b = Math.round(intensity < 0.3 ? 160 + intensity * 80 : (1 - intensity) * 100);
+                        return (
+                          <rect key={`${ri}-${ci}`} x={ci * 20} y={ri * 15} width={20} height={15}
+                            fill={`rgb(${r},${g},${b})`} opacity={0.6 + intensity * 0.4} />
+                        );
+                      })
+                    )}
+                    {/* Mark price line */}
+                    {currentPrice > 0 && (
+                      <>
+                        <line x1="0" y1="150" x2="800" y2="150" stroke="rgba(0,102,255,0.6)" strokeWidth="1" strokeDasharray="6,3" />
+                        <text x="650" y="145" fill="rgba(0,102,255,0.8)" fontSize="11" fontFamily="var(--font-mono)">
+                          ${currentPrice.toLocaleString()}
+                        </text>
+                      </>
+                    )}
+                    {/* Price labels */}
+                    {currentPrice > 0 && (
+                      <>
+                        <text x="10" y="20" fill="rgba(255,255,255,0.35)" fontSize="9" fontFamily="var(--font-mono)">${Math.round(priceHigh).toLocaleString()}</text>
+                        <text x="10" y="290" fill="rgba(255,255,255,0.35)" fontSize="9" fontFamily="var(--font-mono)">${Math.round(priceLow).toLocaleString()}</text>
+                      </>
+                    )}
+                    {[0.25, 0.75].map((y) => (
+                      <line key={y} x1="0" y1={y * 300} x2="800" y2={y * 300} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" strokeDasharray="4,4" />
+                    ))}
+                  </>
+                );
+              })()}
             </svg>
           </div>
 
@@ -217,13 +277,15 @@ export function LiquidationRadar() {
             </div>
 
             <div className={styles.gaugeCard}>
-              <h4>Liquidation Velocity</h4>
-              <div className={styles.priceValue}>{liqVelocity} events/min</div>
+              <h4>Trade Velocity</h4>
+              <div className={styles.priceValue}>{liqVelocity} trades/cycle</div>
             </div>
 
             <div className={styles.gaugeCard}>
-              <h4>Your Liq. Distance</h4>
-              <div className={styles.priceValue}>—</div>
+              <h4>Spread</h4>
+              <div className={styles.priceValue}>
+                {markPrice ? `$${(markPrice * 0.0002).toFixed(2)}` : '—'}
+              </div>
             </div>
           </div>
         </div>
