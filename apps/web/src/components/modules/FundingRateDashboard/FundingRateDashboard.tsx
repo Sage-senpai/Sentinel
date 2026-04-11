@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 import { useApi } from '@/hooks/useApi';
 import * as api from '@/services/api';
+import { ProBadge } from '@/components/layout/ProBadge/ProBadge';
 import styles from './FundingRateDashboard.module.scss';
 
 interface FundingRateUI {
@@ -87,7 +88,10 @@ export function FundingRateDashboard() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2>Funding Rate Intelligence</h2>
+        <h2>
+          Funding Rate Intelligence
+          <ProBadge feature="Funding Forecasts" description="ARIMA+LSTM ensemble model predicts 4 epochs ahead with confidence bands. Spot carry opportunities before the market." />
+        </h2>
         <p className={styles.subtitle}>Live rates, 4-epoch forecast, and carry cost analysis</p>
       </div>
 
@@ -142,11 +146,85 @@ export function FundingRateDashboard() {
 
         <div className={styles.chartSection}>
           <h3>
-            {selectedMarket ? `${selectedMarket} — 30-Day History & Forecast` : 'Select a market to view forecast'}
+            {selectedMarket ? `${selectedMarket} — Funding Rate Forecast` : 'Select a market to view forecast'}
           </h3>
-          <div className={styles.chartPlaceholder}>
-            {selectedMarket ? 'Chart rendering with D3.js...' : 'Click a market row to view historical and predicted rates'}
-          </div>
+          {selectedMarket && forecast ? (
+            <div className={styles.chartContainer}>
+              <svg viewBox="0 0 600 200" className={styles.chartSvg} preserveAspectRatio="none">
+                {/* Zero line */}
+                <line x1="50" y1="100" x2="550" y2="100" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" strokeDasharray="4,4" />
+                <text x="10" y="104" fill="rgba(255,255,255,0.3)" fontSize="8" fontFamily="var(--font-mono)">0%</text>
+
+                {/* Confidence band */}
+                {forecast.predictions.length > 0 && (
+                  <path
+                    d={`M ${forecast.confidence_upper.map((v, i) => `${50 + i * (500 / (forecast.predictions.length - 1 || 1))},${100 - v * 100000}`).join(' L ')} L ${forecast.confidence_lower.slice().reverse().map((v, i) => `${50 + (forecast.predictions.length - 1 - i) * (500 / (forecast.predictions.length - 1 || 1))},${100 - v * 100000}`).join(' L ')} Z`}
+                    fill="rgba(0, 102, 255, 0.1)"
+                    stroke="none"
+                  />
+                )}
+
+                {/* Prediction line */}
+                {forecast.predictions.length > 0 && (
+                  <polyline
+                    points={forecast.predictions.map((v, i) => `${50 + i * (500 / (forecast.predictions.length - 1 || 1))},${100 - v * 100000}`).join(' ')}
+                    fill="none"
+                    stroke="var(--color-blue)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
+
+                {/* Prediction dots */}
+                {forecast.predictions.map((v, i) => (
+                  <circle
+                    key={i}
+                    cx={50 + i * (500 / (forecast.predictions.length - 1 || 1))}
+                    cy={100 - v * 100000}
+                    r="4"
+                    fill="var(--color-blue)"
+                    stroke="var(--color-base)"
+                    strokeWidth="2"
+                  />
+                ))}
+
+                {/* Epoch labels */}
+                {forecast.predictions.map((v, i) => (
+                  <text
+                    key={`label-${i}`}
+                    x={50 + i * (500 / (forecast.predictions.length - 1 || 1))}
+                    y="190"
+                    fill="rgba(255,255,255,0.4)"
+                    fontSize="9"
+                    fontFamily="var(--font-mono)"
+                    textAnchor="middle"
+                  >
+                    Epoch {i + 1}
+                  </text>
+                ))}
+
+                {/* Rate labels on dots */}
+                {forecast.predictions.map((v, i) => (
+                  <text
+                    key={`rate-${i}`}
+                    x={50 + i * (500 / (forecast.predictions.length - 1 || 1))}
+                    y={95 - v * 100000}
+                    fill="var(--color-text-primary)"
+                    fontSize="8"
+                    fontFamily="var(--font-mono)"
+                    textAnchor="middle"
+                  >
+                    {(v * 100).toFixed(4)}%
+                  </text>
+                ))}
+              </svg>
+            </div>
+          ) : (
+            <div className={styles.chartPlaceholder}>
+              Click a market row to view predicted funding rates
+            </div>
+          )}
         </div>
 
         {carries.length > 0 && (

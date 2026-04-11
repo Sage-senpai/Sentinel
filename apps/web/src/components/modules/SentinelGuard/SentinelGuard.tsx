@@ -5,6 +5,7 @@ import { useSocket } from '@/hooks/useSocket';
 import { useApi } from '@/hooks/useApi';
 import { useNotify } from '@/components/providers/NotificationProvider';
 import * as api from '@/services/api';
+import { ProBadge } from '@/components/layout/ProBadge/ProBadge';
 import styles from './SentinelGuard.module.scss';
 
 interface PositionUI {
@@ -27,6 +28,18 @@ interface AlertEntry {
   market: string;
   details: string;
   status: 'success' | 'failed' | 'pending';
+}
+
+function getGuardState(symbol: string): boolean | null {
+  if (typeof window === 'undefined') return null;
+  const val = localStorage.getItem(`sentinel-guard-${symbol}`);
+  return val !== null ? val === 'true' : null;
+}
+
+function saveGuardState(symbol: string, enabled: boolean) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(`sentinel-guard-${symbol}`, String(enabled));
+  }
 }
 
 export function SentinelGuard() {
@@ -53,7 +66,7 @@ export function SentinelGuard() {
         markPrice: p.mark_price,
         marginRatio: p.margin_ratio,
         healthScore: p.health_score,
-        guardEnabled: guardConfig?.guard_enabled ?? false,
+        guardEnabled: getGuardState(p.symbol) ?? guardConfig?.guard_enabled ?? false,
         pnl: p.unrealized_pnl,
         pnlPercent: p.entry_price > 0 ? (p.unrealized_pnl / (p.size * p.entry_price)) * 100 : 0,
       })));
@@ -108,6 +121,7 @@ export function SentinelGuard() {
     setPositions((prev) =>
       prev.map((p) => p.symbol === symbol ? { ...p, guardEnabled: enabling } : p)
     );
+    saveGuardState(symbol, enabling);
     try {
       await api.guard.update({ guard_enabled: enabling, position_symbol: symbol });
       notify(
@@ -138,7 +152,10 @@ export function SentinelGuard() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2>SENTINEL Guard</h2>
+        <h2>
+          SENTINEL Guard
+          <ProBadge feature="Guard Bot" description="Automated position protection with configurable thresholds, partial close, and margin top-up via Rhino.fi bridge." />
+        </h2>
         <p className={styles.subtitle}>Automated position protection — monitors every 10 seconds</p>
       </div>
 

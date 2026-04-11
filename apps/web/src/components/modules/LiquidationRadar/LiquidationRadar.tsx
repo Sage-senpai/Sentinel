@@ -149,9 +149,37 @@ export function LiquidationRadar() {
           </div>
 
           <div className={styles.heatmap} ref={heatmapRef}>
-            <div className={styles.heatmapPlaceholder}>
-              {connected ? 'Receiving liquidation data...' : 'Connecting to Pacifica WebSocket...'}
-            </div>
+            <svg viewBox="0 0 800 300" className={styles.heatmapSvg} preserveAspectRatio="none">
+              {/* Simulated liquidation density heatmap */}
+              {Array.from({ length: 20 }, (_, row) =>
+                Array.from({ length: 40 }, (_, col) => {
+                  const risk = marketRisks.find((m) => m.symbol === selectedMarket);
+                  const baseIntensity = (risk?.riskScore ?? 30) / 100;
+                  const noise = Math.sin(col * 0.5 + row * 0.3) * 0.3 + Math.cos(col * 0.2 - row * 0.4) * 0.2;
+                  const intensity = Math.max(0, Math.min(1, baseIntensity * 0.6 + noise * 0.4 + Math.random() * 0.1));
+                  const r = Math.round(intensity > 0.6 ? 200 + intensity * 55 : intensity * 100);
+                  const g = Math.round(intensity > 0.5 ? (1 - intensity) * 180 : 100 + intensity * 150);
+                  const b = Math.round(intensity < 0.3 ? 150 + intensity * 100 : (1 - intensity) * 80);
+                  return (
+                    <rect
+                      key={`${row}-${col}`}
+                      x={col * 20}
+                      y={row * 15}
+                      width={20}
+                      height={15}
+                      fill={`rgb(${r},${g},${b})`}
+                      opacity={0.7 + intensity * 0.3}
+                    />
+                  );
+                })
+              )}
+              {/* Price level lines */}
+              {[0.25, 0.5, 0.75].map((y) => (
+                <line key={y} x1="0" y1={y * 300} x2="800" y2={y * 300} stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" strokeDasharray="4,4" />
+              ))}
+              <text x="10" y="20" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="var(--font-mono)">High Liq. Density</text>
+              <text x="10" y="290" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="var(--font-mono)">Low Liq. Density</text>
+            </svg>
           </div>
 
           <div className={styles.gaugeRow}>

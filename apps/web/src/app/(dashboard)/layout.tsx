@@ -1,6 +1,7 @@
 import { Sidebar } from '@/components/layout/Sidebar/Sidebar';
 import { Header } from '@/components/layout/Header/Header';
 import { NotificationProvider } from '@/components/providers/NotificationProvider';
+import { OnboardingTooltips } from '@/components/layout/OnboardingTooltips/OnboardingTooltips';
 
 export default function DashboardLayout({
   children,
@@ -16,6 +17,7 @@ export default function DashboardLayout({
           <main className="app-content">{children}</main>
         </div>
       </div>
+      <OnboardingTooltips />
     </NotificationProvider>
   );
 }

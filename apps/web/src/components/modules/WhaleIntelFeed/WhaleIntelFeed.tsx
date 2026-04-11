@@ -5,6 +5,7 @@ import { useSocket } from '@/hooks/useSocket';
 import { useApi } from '@/hooks/useApi';
 import { useNotify } from '@/components/providers/NotificationProvider';
 import * as api from '@/services/api';
+import { ProBadge } from '@/components/layout/ProBadge/ProBadge';
 import styles from './WhaleIntelFeed.module.scss';
 
 type WhaleIntent = 'ACCUMULATING' | 'DISTRIBUTING' | 'HEDGING' | 'ARBITRAGE' | 'UNKNOWN';
@@ -104,7 +105,10 @@ export function WhaleIntelFeed() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2>Whale Intelligence Feed</h2>
+        <h2>
+          Whale Intelligence Feed
+          <ProBadge feature="Unlimited Whale Alerts" description="Free tier: 3 alerts/day. Pro unlocks unlimited real-time whale tracking with convergence detection." />
+        </h2>
         <div className={styles.headerStats}>
           <span className={styles.stat}>
             Tracking: <strong>{events.length}</strong> events

@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useApi } from '@/hooks/useApi';
 import * as api from '@/services/api';
+import { ProBadge } from '@/components/layout/ProBadge/ProBadge';
 import styles from './AfricaHedgeCalculator.module.scss';
 
 type Currency = 'NGN' | 'ZAR' | 'INR' | 'PHP' | 'IDR' | 'THB';
@@ -116,7 +117,10 @@ export function AfricaHedgeCalculator() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2>FX Hedge Calculator</h2>
+        <h2>
+          FX Hedge Calculator
+          <ProBadge feature="FX Hedge Calculator" description="Live CoinGecko rates and Pacifica funding data for hedging emerging market currency exposure through BTC perpetuals." />
+        </h2>
         <p className={styles.subtitle}>Protect portfolio value against local currency depreciation — Africa & Asia</p>
       </div>
 
