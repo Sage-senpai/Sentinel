@@ -24,17 +24,30 @@
 
 .tooltip {
   position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: calc(100% + 8px);
+  left: 0;
   @include glass-card;
+  background: rgba(10, 10, 15, 0.98);
   padding: var(--space-3) var(--space-4);
-  width: 240px;
+  width: 260px;
   z-index: var(--z-tooltip);
   pointer-events: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 92, 246, 0.15);
 
   @media (prefers-reduced-motion: no-preference) {
     animation: fade-in-up 0.2s var(--ease-out-expo);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 16px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid rgba(10, 10, 15, 0.98);
   }
 
   strong {
@@ -42,6 +55,8 @@
     font-size: var(--text-sm);
     color: var(--color-text-primary);
     margin-bottom: 4px;
+    font-family: var(--font-sans);
+    letter-spacing: 0;
   }
 
   p {
@@ -50,6 +65,8 @@
     line-height: 1.5;
     margin-bottom: 6px;
     font-weight: 400;
+    font-family: var(--font-sans);
+    letter-spacing: 0;
   }
 }
 
