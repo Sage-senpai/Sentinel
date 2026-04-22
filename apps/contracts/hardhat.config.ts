@@ -17,7 +17,13 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {},
-    // Testnet — use this for hackathon demo
+    // Ethereum Sepolia testnet
+    sepolia: {
+      url: 'https://sepolia.drpc.org',
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      chainId: 11155111,
+    },
+    // Arbitrum Sepolia testnet
     arbitrumSepolia: {
       url: 'https://sepolia-rollup.arbitrum.io/rpc',
       accounts: [DEPLOYER_PRIVATE_KEY],

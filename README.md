@@ -86,7 +86,7 @@ sentinel/
 ### Smart Contracts
 - Solidity ^0.8.20 (SentinelAlertRegistry)
 - Hardhat + OpenZeppelin
-- Deployed to Arbitrum mainnet
+- Deployed to Ethereum Sepolia testnet (`0x486aFe3c1e3dE1253B31C82A30d5270e63403c27`)
 
 ### Sponsor Integrations
 - **Privy** — Auth + embedded wallet
@@ -171,7 +171,14 @@ GET  /api/v1/guard/status       # Guard bot status
 
 ## Smart Contract
 
-**SentinelAlertRegistry.sol** — Deployed to Arbitrum mainnet
+**SentinelAlertRegistry.sol** — Deployed to Ethereum Sepolia testnet
+
+| | |
+|---|---|
+| Network | Ethereum Sepolia |
+| Chain ID | 11155111 |
+| Contract | [`0x486aFe3c1e3dE1253B31C82A30d5270e63403c27`](https://sepolia.etherscan.io/address/0x486aFe3c1e3dE1253B31C82A30d5270e63403c27) |
+| Publisher | `0xE5A747FA09271C8d479Cf718b205F8aADd6E4C30` |
 
 Stores high-confidence (>85%) cascade alerts on-chain for verifiability.
 

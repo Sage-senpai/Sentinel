@@ -200,18 +200,67 @@ export default function DocsPage() {
           <section id="contracts" className={styles.section}>
             <h2>Smart Contracts</h2>
             <h3>SentinelAlertRegistry</h3>
-            <p>Deployed to Arbitrum mainnet. Stores high-confidence cascade alerts (probability &gt; 85%) on-chain for verifiability.</p>
+            <p>Deployed to Ethereum Sepolia testnet. Stores high-confidence cascade alerts (probability &gt; 85%) on-chain for verifiability and transparency.</p>
+
+            <div className={styles.serviceTable}>
+              <div className={styles.serviceRow}>
+                <span>Network</span>
+                <code>Ethereum Sepolia</code>
+              </div>
+              <div className={styles.serviceRow}>
+                <span>Chain ID</span>
+                <code>11155111</code>
+              </div>
+              <div className={styles.serviceRow}>
+                <span>Contract Address</span>
+                <code>0x486aFe3c1e3dE1253B31C82A30d5270e63403c27</code>
+              </div>
+              <div className={styles.serviceRow}>
+                <span>Etherscan</span>
+                <a
+                  href="https://sepolia.etherscan.io/address/0x486aFe3c1e3dE1253B31C82A30d5270e63403c27"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View on Sepolia Etherscan
+                </a>
+              </div>
+              <div className={styles.serviceRow}>
+                <span>Authorized Publisher</span>
+                <code>0xE5A747FA09271C8d479Cf718b205F8aADd6E4C30</code>
+              </div>
+            </div>
+
+            <h3>Interface</h3>
             <div className={styles.codeBlock}>
               <code>
-                <span className={styles.comment}>// Publish a cascade alert</span>{'\n'}
+                <span className={styles.comment}>// Publish a cascade alert (only authorized publisher)</span>{'\n'}
                 function publishAlert({'\n'}
                 {'  '}string memory market,{'\n'}
                 {'  '}uint256 cascadeProbability, <span className={styles.comment}>// basis points (8500 = 85%)</span>{'\n'}
                 {'  '}uint8 severity <span className={styles.comment}>// 1=WATCH 2=ALERT 3=CASCADE_IMMINENT</span>{'\n'}
                 ) external onlyAuthorizedPublisher{'\n\n'}
-                <span className={styles.comment}>// Read alerts</span>{'\n'}
-                function getAlertCount() returns (uint256){'\n'}
-                function getAlert(uint256 alertId) returns (Alert)
+                <span className={styles.comment}>// Read alerts (public)</span>{'\n'}
+                function getAlertCount() view returns (uint256){'\n'}
+                function getAlert(uint256 alertId) view returns (Alert){'\n\n'}
+                <span className={styles.comment}>// Event emitted on every alert</span>{'\n'}
+                event AlertPublished({'\n'}
+                {'  '}uint256 indexed alertId,{'\n'}
+                {'  '}address indexed publisher,{'\n'}
+                {'  '}string market,{'\n'}
+                {'  '}uint256 probability,{'\n'}
+                {'  '}uint8 severity,{'\n'}
+                {'  '}uint256 timestamp{'\n'}
+                )
+              </code>
+            </div>
+
+            <h3>Custom Errors (Gas-Optimized)</h3>
+            <div className={styles.codeBlock}>
+              <code>
+                error NotAuthorized();{'\n'}
+                error InvalidSeverity();{'\n'}
+                error InvalidProbability();
               </code>
             </div>
           </section>
